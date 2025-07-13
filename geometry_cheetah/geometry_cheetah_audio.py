@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 import os
+import numpy as np
 from enum import Enum
 
 # Initialize Pygame and mixer
@@ -44,6 +45,73 @@ class GameState(Enum):
     GAME_OVER = 4
     LEVEL_COMPLETE = 5
 
+class Background:
+    def __init__(self):
+        self.clouds = []
+        self.stars = []
+        self.parallax_offset = 0
+        
+        # Generate clouds
+        for _ in range(5):
+            self.clouds.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(50, 200),
+                'size': random.randint(30, 80)
+            })
+            
+        # Generate stars
+        for _ in range(50):
+            self.stars.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, 300),
+                'brightness': random.randint(100, 255)
+            })
+    
+    def update(self):
+        # Update parallax offset
+        self.parallax_offset += 2 * 0.5
+        
+        # Update clouds
+        for cloud in self.clouds:
+            cloud['x'] -= 1
+            if cloud['x'] + cloud['size'] < 0:
+                cloud['x'] = SCREEN_WIDTH + cloud['size']
+                cloud['y'] = random.randint(50, 200)
+                
+        # Update stars
+        for star in self.stars:
+            star['x'] -= 0.5
+            if star['x'] < 0:
+                star['x'] = SCREEN_WIDTH
+                star['y'] = random.randint(0, 300)
+    
+    def draw(self, screen):
+        # Draw gradient sky
+        for y in range(300):
+            color_ratio = y / 300
+            r = int(100 + color_ratio * 50)
+            g = int(150 + color_ratio * 100)
+            b = int(255 - color_ratio * 100)
+            pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+        
+        # Draw stars
+        for star in self.stars:
+            color = (star['brightness'], star['brightness'], star['brightness'])
+            pygame.draw.circle(screen, color, (int(star['x']), int(star['y'])), 1)
+        
+        # Draw clouds
+        for cloud in self.clouds:
+            pygame.draw.circle(screen, WHITE, (int(cloud['x']), int(cloud['y'])), cloud['size'])
+            pygame.draw.circle(screen, WHITE, (int(cloud['x'] - 20), int(cloud['y'])), cloud['size'] - 10)
+            pygame.draw.circle(screen, WHITE, (int(cloud['x'] + 20), int(cloud['y'])), cloud['size'] - 10)
+        
+        # Draw ground
+        pygame.draw.rect(screen, GREEN, (0, GROUND_Y, SCREEN_WIDTH, SCREEN_HEIGHT - GROUND_Y))
+        
+        # Draw grass texture
+        for i in range(0, SCREEN_WIDTH, 20):
+            pygame.draw.line(screen, (50, 200, 50), (i, GROUND_Y), (i + 10, GROUND_Y - 5), 2)
+
 class AudioManager:
     def __init__(self):
         self.sounds = {}
@@ -69,81 +137,59 @@ class AudioManager:
         sample_rate = 44100
         duration = 0.2
         samples = int(sample_rate * duration)
-        
-        # Create a rising tone for jump
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)  # Stereo
         for i in range(samples):
             frequency = 400 + (i / samples) * 200  # Rising frequency
             sample = int(32767 * 0.3 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['jump'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['jump'] = pygame.sndarray.make_sound(sound_array)
     
     def create_land_sound(self):
         """Create a landing sound effect"""
         sample_rate = 44100
         duration = 0.15
         samples = int(sample_rate * duration)
-        
-        # Create a thud sound
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)
         for i in range(samples):
             frequency = 200 * math.exp(-i / (samples * 0.3))  # Decaying frequency
             sample = int(32767 * 0.4 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['land'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['land'] = pygame.sndarray.make_sound(sound_array)
     
     def create_death_sound(self):
         """Create a death sound effect"""
         sample_rate = 44100
         duration = 0.5
         samples = int(sample_rate * duration)
-        
-        # Create a descending tone for death
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)
         for i in range(samples):
             frequency = 600 * math.exp(-i / (samples * 0.5))  # Descending frequency
             sample = int(32767 * 0.5 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['death'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['death'] = pygame.sndarray.make_sound(sound_array)
     
     def create_score_sound(self):
         """Create a score sound effect"""
         sample_rate = 44100
         duration = 0.1
         samples = int(sample_rate * duration)
-        
-        # Create a happy chime
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)
         for i in range(samples):
             frequency = 800 + 200 * math.sin(i / samples * 4 * math.pi)
             sample = int(32767 * 0.3 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['score'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['score'] = pygame.sndarray.make_sound(sound_array)
     
     def create_level_complete_sound(self):
         """Create a level complete sound effect"""
         sample_rate = 44100
         duration = 0.8
         samples = int(sample_rate * duration)
-        
-        # Create a victory fanfare
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)
         for i in range(samples):
             if i < samples // 3:
                 frequency = 523  # C note
@@ -152,65 +198,46 @@ class AudioManager:
             else:
                 frequency = 784  # G note
             sample = int(32767 * 0.4 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['level_complete'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['level_complete'] = pygame.sndarray.make_sound(sound_array)
     
     def create_menu_select_sound(self):
         """Create a menu selection sound effect"""
         sample_rate = 44100
         duration = 0.1
         samples = int(sample_rate * duration)
-        
-        # Create a click sound
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)
         for i in range(samples):
             frequency = 300
             sample = int(32767 * 0.2 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['menu_select'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['menu_select'] = pygame.sndarray.make_sound(sound_array)
     
     def create_bounce_sound(self):
         """Create a bounce sound effect"""
         sample_rate = 44100
         duration = 0.15
         samples = int(sample_rate * duration)
-        
-        # Create a bouncy sound
-        sound_array = []
+        sound_array = np.zeros((samples, 2), dtype=np.int16)
         for i in range(samples):
             frequency = 600 * math.exp(-i / (samples * 0.2))
             sample = int(32767 * 0.3 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            sound_array.append(sample)
-        
-        sound_surface = pygame.sndarray.make_sound(pygame.surfarray.pixels3d(
-            pygame.Surface((len(sound_array), 1, 3))
-        ))
-        self.sounds['bounce'] = sound_surface
+            sound_array[i, 0] = sample
+            sound_array[i, 1] = sample
+        self.sounds['bounce'] = pygame.sndarray.make_sound(sound_array)
     
     def play_sound(self, sound_name):
         """Play a sound effect"""
         if sound_name in self.sounds:
-            try:
-                self.sounds[sound_name].play()
-            except:
-                pass  # Ignore sound errors
+            self.sounds[sound_name].play()
     
     def start_music(self):
         """Start background music"""
         if not self.music_playing:
-            try:
-                # Create a simple background music loop
-                self.music_playing = True
-            except:
-                pass
+            # Create a simple background music loop
+            self.music_playing = True
     
     def stop_music(self):
         """Stop background music"""
@@ -469,6 +496,174 @@ class Cheetah:
             screen.blit(rotated_surface, (self.x - rotated_surface.get_width()//2, 
                                          self.y - rotated_surface.get_height()//2))
 
+class Platform:
+    def __init__(self, x, y, platform_type="normal", level_settings=None):
+        self.x = x
+        self.y = y
+        self.platform_type = platform_type
+        self.level_settings = level_settings or Level(1, "Tutorial", "Easy level", BLUE)
+        self.movement_timer = 0
+        self.original_y = y
+        self.visible = True
+        self.teleport_timer = 0
+        
+        # Set properties based on platform type - EASIER PLATFORMS
+        if platform_type == "normal":
+            self.width = 100  # Increased from 80
+            self.height = 25  # Increased from 20
+            self.color = GREEN
+        elif platform_type == "wide":
+            self.width = 120  # New wide platform
+            self.height = 30
+            self.color = LIME
+        elif platform_type == "moving_slow":
+            self.width = 90  # Increased from 70
+            self.height = 25  # Increased from 18
+            self.color = CYAN
+        elif platform_type == "disappearing_slow":
+            self.width = 80  # Increased from 60
+            self.height = 22  # Increased from 16
+            self.color = YELLOW
+            self.disappear_timer = 0
+        elif platform_type == "bouncy":
+            self.width = 95  # Increased from 75
+            self.height = 25  # Increased from 20
+            self.color = PINK
+        elif platform_type == "teleport_slow":
+            self.width = 85  # Increased from 65
+            self.height = 22  # Increased from 17
+            self.color = PURPLE
+        
+    def update(self):
+        self.x -= self.level_settings.obstacle_speed
+        self.movement_timer += 1
+        
+        # Special movement for moving platforms - SLOWER
+        if self.platform_type == "moving_slow":
+            self.y = self.original_y + math.sin(self.movement_timer * 0.05) * 30  # Slower movement
+        
+        # Disappearing platform logic - SLOWER
+        elif self.platform_type == "disappearing_slow":
+            self.disappear_timer += 1
+            if self.disappear_timer > 180:  # Disappear after 3 seconds (was 2)
+                self.visible = False
+        
+        # Teleport platform logic - SLOWER
+        elif self.platform_type == "teleport_slow":
+            self.teleport_timer += 1
+            if self.teleport_timer > 240:  # Teleport every 4 seconds (was 3)
+                self.y = random.randint(GROUND_Y - 250, GROUND_Y - 80)
+                self.teleport_timer = 0
+        
+    def draw(self, screen):
+        if not self.visible:
+            return
+        
+        # Draw platform with better graphics
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        
+        # Add platform border for better visibility
+        pygame.draw.rect(screen, WHITE, (self.x, self.y, self.width, self.height), 2)
+        
+        # Add special effects
+        if self.platform_type == "disappearing_slow":
+            # Add warning effect
+            if self.disappear_timer > 150:  # Flash when about to disappear
+                if self.disappear_timer % 30 < 15:  # Slower flashing
+                    pygame.draw.rect(screen, RED, (self.x, self.y, self.width, self.height), 3)
+        
+        elif self.platform_type == "bouncy":
+            # Add bounce effect
+            pygame.draw.rect(screen, WHITE, (self.x + 5, self.y + 5, self.width - 10, 8))
+            pygame.draw.rect(screen, PINK, (self.x + 8, self.y + 8, self.width - 16, 4))
+        
+        elif self.platform_type == "teleport_slow":
+            # Add teleport effect
+            if self.teleport_timer > 200:  # Flash before teleporting
+                if self.teleport_timer % 20 < 10:  # Slower flashing
+                    pygame.draw.rect(screen, WHITE, (self.x, self.y, self.width, self.height), 3)
+        
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+class Obstacle:
+    def __init__(self, x, obstacle_type="spike", level_settings=None):
+        self.x = x
+        self.obstacle_type = obstacle_type
+        self.level_settings = level_settings or Level(1, "Tutorial", "Easy level", BLUE)
+        self.width = 30
+        self.movement_timer = 0
+        self.original_y = 0
+        
+        # Set properties based on obstacle type
+        if obstacle_type == "spike":
+            self.height = 45
+            self.color = RED
+        elif obstacle_type == "block":
+            self.height = 50
+            self.color = RED
+        elif obstacle_type == "flying_spike":
+            self.height = 40
+            self.color = RED
+            self.y_offset = -250
+        elif obstacle_type == "double_spike":
+            self.height = 45
+            self.color = PURPLE
+            self.width = 60
+        elif obstacle_type == "moving_spike":
+            self.height = 45
+            self.color = CYAN
+            self.original_y = GROUND_Y - self.height
+            self.y_offset = 0
+        elif obstacle_type == "laser":
+            self.height = 5
+            self.color = YELLOW
+            self.width = 100
+            self.y_offset = -200
+        
+    def update(self):
+        self.x -= self.level_settings.obstacle_speed
+        self.movement_timer += 1
+        
+        # Special movement for moving obstacles
+        if self.obstacle_type == "moving_spike":
+            self.y_offset = math.sin(self.movement_timer * 0.1) * 30
+        
+    def draw(self, screen):
+        if self.obstacle_type == "spike":
+            points = [(self.x, GROUND_Y), (self.x + 15, GROUND_Y - self.height), (self.x + 30, GROUND_Y)]
+            pygame.draw.polygon(screen, self.color, points)
+        elif self.obstacle_type == "block":
+            pygame.draw.rect(screen, self.color, (self.x, GROUND_Y - self.height, self.width, self.height))
+        elif self.obstacle_type == "flying_spike":
+            points = [(self.x, GROUND_Y + self.y_offset), (self.x + 15, GROUND_Y + self.y_offset - self.height), (self.x + 30, GROUND_Y + self.y_offset)]
+            pygame.draw.polygon(screen, self.color, points)
+        elif self.obstacle_type == "double_spike":
+            points1 = [(self.x, GROUND_Y), (self.x + 15, GROUND_Y - self.height), (self.x + 30, GROUND_Y)]
+            points2 = [(self.x + 30, GROUND_Y), (self.x + 45, GROUND_Y - self.height), (self.x + 60, GROUND_Y)]
+            pygame.draw.polygon(screen, self.color, points1)
+            pygame.draw.polygon(screen, self.color, points2)
+        elif self.obstacle_type == "moving_spike":
+            points = [(self.x, GROUND_Y + self.y_offset), (self.x + 15, GROUND_Y + self.y_offset - self.height), (self.x + 30, GROUND_Y + self.y_offset)]
+            pygame.draw.polygon(screen, self.color, points)
+        elif self.obstacle_type == "laser":
+            pygame.draw.rect(screen, self.color, (self.x, GROUND_Y + self.y_offset, self.width, self.height))
+            pygame.draw.rect(screen, WHITE, (self.x, GROUND_Y + self.y_offset, self.width, 2))
+        
+    def get_rect(self):
+        if self.obstacle_type == "spike":
+            return pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
+        elif self.obstacle_type == "block":
+            return pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
+        elif self.obstacle_type == "flying_spike":
+            return pygame.Rect(self.x, GROUND_Y + self.y_offset - self.height, self.width, self.height)
+        elif self.obstacle_type == "double_spike":
+            return pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
+        elif self.obstacle_type == "moving_spike":
+            return pygame.Rect(self.x, GROUND_Y + self.y_offset - self.height, self.width, self.height)
+        elif self.obstacle_type == "laser":
+            return pygame.Rect(self.x, GROUND_Y + self.y_offset, self.width, self.height)
+
 # Rest of the classes (Platform, Obstacle, Background) remain the same as in improved version
 # but with audio integration added to the Game class
 
@@ -502,7 +697,7 @@ class Game:
         self.cheetah = Cheetah(100, GROUND_Y - 40, self.audio_manager)
         self.obstacles = []
         self.platforms = []
-        self.background = Background(self.levels[self.current_level - 1].background_color)
+        self.background = Background()
         self.score = 0
         self.game_state = GameState.MENU
         self.game_start_time = 0
@@ -653,6 +848,20 @@ class Game:
         
         return True
     
+    def draw(self):
+        self.screen.fill(BLACK)
+        if self.game_state == GameState.MENU:
+            self.draw_menu()
+        elif self.game_state == GameState.LEVEL_SELECT:
+            self.draw_level_select()
+        elif self.game_state == GameState.PLAYING:
+            self.draw_game()
+        elif self.game_state == GameState.GAME_OVER:
+            self.draw_game_over()
+        elif self.game_state == GameState.LEVEL_COMPLETE:
+            self.draw_level_complete()
+        pygame.display.flip()
+
     def run(self):
         running = True
         while running:
@@ -660,8 +869,40 @@ class Game:
             self.update()
             self.draw()
             self.clock.tick(FPS)
-        
         pygame.quit()
+
+    def draw_menu(self):
+        self.background.draw(self.screen)
+        text = self.font.render("AUDIO EDITION - MENU", True, WHITE)
+        self.screen.blit(text, (SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT//2 - 50))
+
+    def draw_level_select(self):
+        self.background.draw(self.screen)
+        text = self.font.render("Select Level", True, WHITE)
+        self.screen.blit(text, (SCREEN_WIDTH//2 - 150, SCREEN_HEIGHT//2 - 50))
+
+    def draw_game(self):
+        self.background.draw(self.screen)
+        text = self.font.render("Game Running", True, WHITE)
+        self.screen.blit(text, (SCREEN_WIDTH//2 - 150, 20))
+        self.cheetah.draw(self.screen)
+        # Draw obstacles and platforms if they exist
+        for obstacle in getattr(self, 'obstacles', []):
+            if hasattr(obstacle, 'draw'):
+                obstacle.draw(self.screen)
+        for platform in getattr(self, 'platforms', []):
+            if hasattr(platform, 'draw'):
+                platform.draw(self.screen)
+
+    def draw_game_over(self):
+        self.background.draw(self.screen)
+        text = self.font.render("GAME OVER", True, RED)
+        self.screen.blit(text, (SCREEN_WIDTH//2 - 150, SCREEN_HEIGHT//2 - 50))
+
+    def draw_level_complete(self):
+        self.background.draw(self.screen)
+        text = self.font.render("LEVEL COMPLETE!", True, GREEN)
+        self.screen.blit(text, (SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT//2 - 50))
 
 # Add the missing classes (Platform, Obstacle, Background) here
 # They would be the same as in the improved version
