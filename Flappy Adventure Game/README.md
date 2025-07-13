@@ -1,10 +1,10 @@
-# Flappy Bird with Music 🎵
+# Flappy Adventure 🎵
 
-This folder contains the musical versions of the Flappy Bird game with enhanced audio features.
+This folder contains the musical versions of the Flappy Adventure game with enhanced audio features.
 
 ## Files Included
 
-- **`flappy_bird_with_song.py`** - The main game with the classic Flappy Bird melody
+- **`flappy_bird_with_song.py`** - The main game with the classic Flappy Adventure melody
 - **`flappy_bird_with_music.py`** - Enhanced version with background music and sound effects
 - **`test_audio.py`** - Audio testing script to verify sound functionality
 - **`requirements.txt`** - Python dependencies
@@ -13,13 +13,15 @@ This folder contains the musical versions of the Flappy Bird game with enhanced 
 ## Features
 
 ### flappy_bird_with_song.py
-- Classic Flappy Bird gameplay
-- The iconic Flappy Bird melody playing in the background
+
+- Classic Flappy Adventure gameplay
+- The iconic Flappy Adventure melody playing in the background
 - Dynamic backgrounds that change as you progress
 - Theme-specific pipe designs
 - Sound effects for flapping, scoring, and crashing
 
 ### flappy_bird_with_music.py
+
 - Enhanced audio with background music
 - Multiple sound effects
 - Particle effects
@@ -28,17 +30,20 @@ This folder contains the musical versions of the Flappy Bird game with enhanced 
 ## Setup Instructions
 
 1. **Create a Python 3 virtual environment:**
+
    ```bash
    python3 -m venv flappy_bird_env_py3
    source flappy_bird_env_py3/bin/activate
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Run the game:**
+
    ```bash
    python3 flappy_bird_with_song.py
    ```
@@ -52,7 +57,8 @@ This folder contains the musical versions of the Flappy Bird game with enhanced 
 ## Audio Features
 
 The game includes:
-- Background music (classic Flappy Bird melody)
+
+- Background music (classic Flappy Adventure melody)
 - Flap sound effects
 - Score sound effects
 - Crash sound effects
@@ -61,6 +67,7 @@ The game includes:
 ## Troubleshooting
 
 If you don't hear audio:
+
 1. Check your system volume
 2. Run `python3 test_audio.py` to test audio functionality
 3. Make sure pygame is properly installed: `pip install pygame`
@@ -68,6 +75,7 @@ If you don't hear audio:
 ## Game Progression
 
 As you progress through the game, you'll experience:
+
 - **City Theme** (0-10 points) - Urban skyline background
 - **Forest Theme** (10-20 points) - Lush green forest
 - **Mountain Theme** (20-30 points) - Snowy mountain peaks
@@ -76,4 +84,4 @@ As you progress through the game, you'll experience:
 
 Each theme comes with unique pipe designs and background music that adapts to the environment.
 
-Enjoy playing Flappy Bird with Music! 🎮🎵
+Enjoy playing Flappy Adventure! 🎮🎵
