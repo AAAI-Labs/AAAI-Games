@@ -2,7 +2,7 @@
 
 ## 🎮 Flappy Bird Game
 
-A Python implementation of the classic Flappy Bird game using Pygame, featuring both basic and enhanced versions with modern graphics and effects.
+A Python implementation of the classic Flappy Bird game using Pygame, featuring multiple versions from basic graphics to enhanced audio experiences.
 
 ### 🚀 Quick Start
 
@@ -14,12 +14,14 @@ A Python implementation of the classic Flappy Bird game using Pygame, featuring 
    
 2. **Activate Environment:**
    ```bash
-   source flappy_bird_env/bin/activate
+   source flappy_bird_env_py3/bin/activate  # For Python 3 (recommended)
+   # or
+   source flappy_bird_env/bin/activate      # For Python 2
    ```
 
 3. **Run the Game:**
    ```bash
-   python run_game.py
+   python3 run_game.py
    ```
 
 #### Option 2: Direct Installation
@@ -30,13 +32,14 @@ A Python implementation of the classic Flappy Bird game using Pygame, featuring 
 
 2. **Run the Game:**
    ```bash
-   python run_game.py
+   python3 run_game.py
    ```
    
    Or run directly:
    ```bash
-   python flappy_bird.py          # Basic version
-   python flappy_bird_enhanced.py # Enhanced version
+   python3 flappy_bird.py              # Basic version
+   python3 flappy_bird_enhanced.py     # Enhanced version
+   python3 flappy_bird_realistic.py    # Realistic version
    ```
 
 ### 🎯 How to Play
@@ -66,6 +69,37 @@ A Python implementation of the classic Flappy Bird game using Pygame, featuring 
 - **Grass texture** on the ground
 - **Smooth animations** and visual effects
 
+#### Realistic Version (`flappy_bird_realistic.py`)
+- **Realistic bird design** with detailed features (beak, eyes, wings, tail, feet)
+- **Animated wing flapping** with feather details
+- **Dynamic backgrounds** that change as you progress:
+  - 🏙️ **City** (0-9 points): Urban skyline with buildings and lit windows
+  - 🌲 **Forest** (10-19 points): Green forest with trees and nature
+  - 🏔️ **Mountains** (20-29 points): Mountain ranges with snow caps
+  - 🏜️ **Desert** (30-39 points): Sandy desert with dunes and cacti
+  - 🚀 **Space** (40+ points): Cosmic space with stars and planets
+- **Theme-specific pipes** that match each environment
+- **Particle effects** with realistic colors
+- **Progressive difficulty** - backgrounds change every 10 points
+- **Current theme indicator** on screen
+
+### 🎵 Music Versions
+
+Located in the `flappy bird with music/` folder:
+
+#### Flappy Bird with Song (`flappy_bird_with_song.py`)
+- **Classic Flappy Bird melody** playing in the background
+- **Dynamic backgrounds** that change as you progress
+- **Theme-specific pipe designs**
+- **Sound effects** for flapping, scoring, and crashing
+- **Theme change sound effects**
+
+#### Flappy Bird with Music (`flappy_bird_with_music.py`)
+- **Enhanced audio** with background music
+- **Multiple sound effects**
+- **Particle effects**
+- **Animated backgrounds**
+
 ### 🛠️ Technical Details
 
 - **Engine:** Pygame 2.5.0+
@@ -80,9 +114,17 @@ A Python implementation of the classic Flappy Bird game using Pygame, featuring 
 Games/
 ├── flappy_bird.py              # Basic Flappy Bird game
 ├── flappy_bird_enhanced.py     # Enhanced version with effects
-├── run_game.py                 # Game launcher
+├── flappy_bird_realistic.py    # Realistic version with dynamic backgrounds
+├── run_game.py                 # Game launcher (includes music versions)
+├── setup_env.sh                # Environment setup script
 ├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+├── README.md                   # This file
+└── flappy bird with music/     # Music versions folder
+    ├── flappy_bird_with_song.py    # Classic melody version
+    ├── flappy_bird_with_music.py   # Enhanced audio version
+    ├── test_audio.py              # Audio testing script
+    ├── requirements.txt           # Dependencies
+    └── README.md                  # Music versions documentation
 ```
 
 ### 🎮 Controls
@@ -90,7 +132,8 @@ Games/
 | Action | Key |
 |--------|-----|
 | Flap/Restart | SPACE |
-| Quit Game | Close Window |
+| Quit Game | Q |
+| Restart | R |
 
 ### 🔧 Customization
 
@@ -108,28 +151,34 @@ If you encounter issues:
 
 1. **Make sure Pygame is installed:**
    ```bash
-   pip install pygame
+   pip install pygame numpy
    ```
 
 2. **Check Python version:**
    ```bash
-   python --version  # Should be 3.6 or higher
+   python3 --version  # Should be 3.6 or higher
    ```
 
-3. **Run with verbose output:**
+3. **For audio issues:**
    ```bash
-   python -v flappy_bird.py
+   cd "flappy bird with music"
+   python3 test_audio.py
+   ```
+
+4. **Run with verbose output:**
+   ```bash
+   python3 -v flappy_bird.py
    ```
 
 ### 🎯 Future Enhancements
 
 Potential features to add:
-- Sound effects and background music
 - Power-ups and special abilities
 - Multiple bird characters
 - Level progression with increasing difficulty
 - Online leaderboards
 - Mobile touch controls
+- More music tracks and sound effects
 
 ### 📝 License
 
@@ -137,4 +186,4 @@ This project is part of AAAI Labs educational content.
 
 ---
 
-**Happy Gaming! 🐦✨**
+**Happy Gaming! 🐦✨🎵**
