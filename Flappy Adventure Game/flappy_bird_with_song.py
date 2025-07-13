@@ -44,7 +44,7 @@ LIGHT_GRAY = (211, 211, 211)
 
 # Set up the display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Flappy Bird - With Song")
+pygame.display.set_caption("Flappy Adventure")
 clock = pygame.time.Clock()
 
 def create_note(frequency, duration, sample_rate=44100):
@@ -61,7 +61,7 @@ def create_note(frequency, duration, sample_rate=44100):
         return None
 
 def create_flappy_bird_song():
-    """Create the Flappy Bird theme song"""
+    """Create the Flappy Adventure theme song"""
     try:
         import numpy as np
 
@@ -72,7 +72,7 @@ def create_flappy_bird_song():
             'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99
         }
 
-        # Flappy Bird melody (simplified version)
+        # Flappy Adventure melody (simplified version)
         melody = [
             ('C5', 0.3), ('E5', 0.3), ('G5', 0.3), ('C5', 0.3),
             ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3),
@@ -129,7 +129,7 @@ try:
 
     print("🎵 Sound effects created successfully!")
     if background_song:
-        print("🎼 Flappy Bird song created successfully!")
+        print("🎼 Flappy Adventure song created successfully!")
     else:
         print("❌ Could not create background song")
 except Exception as e:
@@ -182,15 +182,22 @@ class Bird:
         if flap_sound:
             flap_sound.play()
 
-    def update(self, speed_boost=False):
+    def update(self, speed_boost=False, pipe_speed=None):
         # Apply gravity (reduced if speed boost is active)
         gravity = GRAVITY * 0.7 if speed_boost else GRAVITY
-        self.velocity += gravity
 
-        # Apply speed boost effect (make bird move faster horizontally)
         if speed_boost:
-            self.x += 2  # Move bird faster to the right
-            self.rect.x = self.x
+            # During speed boost, make bird bob up and down instead of falling
+            import math
+            bob_time = pygame.time.get_ticks() * 0.005  # Time-based bobbing
+            bob_offset = math.sin(bob_time) * 3  # Bob up and down by 3 pixels
+            self.velocity = bob_offset * 0.5  # Gentle bobbing motion
+
+            # Bird stays at the same X position during speed boost
+            # The game world moves faster around it
+        else:
+            # Normal gravity when not speed boosted
+            self.velocity += gravity
 
         self.y += self.velocity
         self.rect.y = self.y
@@ -357,10 +364,31 @@ class Background:
     def update(self, pipe_speed):
         # Update clouds
         for cloud in self.clouds:
-            cloud['x'] -= pipe_speed // 4  # Clouds move slower than pipes
+            cloud['x'] -= pipe_speed // 2  # Clouds move faster with speed boost
             if cloud['x'] < -100:
                 cloud['x'] = SCREEN_WIDTH + 100
                 cloud['y'] = random.randint(50, 200)
+
+        # Update buildings (city theme)
+        for building in self.buildings:
+            building['x'] -= pipe_speed // 3
+            if building['x'] < -100:
+                building['x'] = SCREEN_WIDTH + 100
+                building['height'] = random.randint(100, 300)
+
+        # Update trees (forest theme)
+        for tree in self.trees:
+            tree['x'] -= pipe_speed // 3
+            if tree['x'] < -100:
+                tree['x'] = SCREEN_WIDTH + 100
+                tree['height'] = random.randint(80, 150)
+
+        # Update mountains
+        for mountain in self.mountains:
+            mountain['x'] -= pipe_speed // 4
+            if mountain['x'] < -200:
+                mountain['x'] = SCREEN_WIDTH + 200
+                mountain['height'] = random.randint(150, 250)
 
         # Update stars twinkling
         for star in self.stars:
@@ -763,17 +791,26 @@ class Game:
             if current_time > end_time:
                 if effect == 'speed':
                     self.speed_boost = False
-                    # Also remove invincibility if it was set by speed boost
+                    # Add 2 seconds of invincibility after speed boost ends
                     if 'invincible' in self.powerup_timers and self.powerup_timers['invincible'] == end_time:
-                        self.invincible = False
-                        print("Invincible effect ended!")
+                        # Extend invincibility for 2 more seconds
+                        self.powerup_timers['invincible'] = current_time + 2000  # 2000ms = 2 seconds
+                        print("Speed boost ended! 2 seconds of invincibility remaining!")
+                    else:
+                        # If no invincibility was active, add it for 2 seconds
+                        self.invincible = True
+                        self.powerup_timers['invincible'] = current_time + 2000
+                        print("Speed boost ended! 2 seconds of invincibility granted!")
                 elif effect == 'invincible':
                     self.invincible = False
+                    print("Invincible effect ended!")
                 elif effect == 'double_points':
                     self.double_points = False
+                    print("Double_Points effect ended!")
 
                 del self.powerup_timers[effect]
-                print(f"{effect.title()} effect ended!")
+                if effect != 'invincible':  # Don't print for invincible since we handle it above
+                    print(f"{effect.title()} effect ended!")
 
     def load_high_score(self):
         """Load high score from file"""
@@ -815,8 +852,9 @@ class Game:
             self.update_powerup_timers()
 
             # Apply powerup effects to bird
-            self.bird.update(speed_boost=self.speed_boost)
-            self.background.update(self.get_pipe_speed())
+            current_pipe_speed = self.get_pipe_speed()
+            self.bird.update(speed_boost=self.speed_boost, pipe_speed=current_pipe_speed)
+            self.background.update(current_pipe_speed)
             self.background.update_theme(self.score)
 
             # Update pipes
@@ -984,11 +1022,11 @@ class Game:
             overlay.fill(BLACK)
             screen.blit(overlay, (0, 0))
 
-            title_text = self.font.render("FLAPPY BIRD", True, YELLOW)
+            title_text = self.font.render("FLAPPY ADVENTURE", True, YELLOW)
             screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, SCREEN_HEIGHT // 2 - 120))
 
             instruction1 = self.medium_font.render("Press SPACE to start", True, WHITE)
-            instruction2 = self.small_font.render("🎵 Now with the Flappy Bird song!", True, WHITE)
+            instruction2 = self.small_font.render("🎵 Now with the Flappy Adventure song!", True, WHITE)
             instruction3 = self.small_font.render("Listen to the classic melody", True, WHITE)
             instruction4 = self.small_font.render("💎 Collect powerups for special abilities!", True, WHITE)
 
