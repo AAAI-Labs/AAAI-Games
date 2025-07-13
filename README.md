@@ -1,6 +1,33 @@
 # AAAI Labs (Antoni & Ariana's AI Labs): Games
 
-## 🎮 Flappy Bird Game
+## 🎮 Games Collection
+
+### 🏃 Geometry Cheetah Game
+
+A Geometry Dash-style game featuring a bouncing cheetah character! Jump over obstacles, collect points, and try to achieve the highest score possible.
+
+#### 🚀 Quick Start
+```bash
+cd geometry_cheetah
+./setup_env.sh
+source geometry_cheetah_env/bin/activate
+python run_game.py
+```
+
+#### 🎯 How to Play
+- **Press SPACE** to make the cheetah jump
+- **Avoid obstacles** by timing your jumps perfectly
+- **Try to get the highest score possible!**
+
+#### 🎨 Features
+- **Bouncing Cheetah Character** with realistic physics
+- **Multiple Obstacle Types**: spikes, blocks, and flying spikes
+- **Beautiful Graphics**: gradient sky, animated clouds, stars, and particle effects
+- **Smooth Animations**: cheetah rotation, trail particles, and parallax backgrounds
+
+---
+
+### 🐦 Flappy Bird Game
 
 A Python implementation of the classic Flappy Bird game using Pygame, featuring both basic and enhanced versions with modern graphics and effects.
 
@@ -78,11 +105,21 @@ A Python implementation of the classic Flappy Bird game using Pygame, featuring 
 
 ```
 Games/
-├── flappy_bird.py              # Basic Flappy Bird game
-├── flappy_bird_enhanced.py     # Enhanced version with effects
-├── run_game.py                 # Game launcher
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+├── geometry_cheetah/           # Geometry Cheetah game
+│   ├── geometry_cheetah.py     # Main game file
+│   ├── run_game.py            # Game launcher
+│   ├── setup_env.sh           # Environment setup script
+│   ├── requirements.txt       # Dependencies
+│   └── README.md              # Game documentation
+├── flappy_bird/               # Flappy Bird game
+│   ├── flappy_bird.py         # Basic Flappy Bird game
+│   ├── flappy_bird_enhanced.py # Enhanced version with effects
+│   ├── run_game.py            # Game launcher
+│   ├── setup_env.sh           # Environment setup script
+│   ├── requirements.txt       # Dependencies
+│   └── README.md              # Game documentation
+├── requirements.txt           # Main project dependencies
+└── README.md                  # This file
 ```
 
 ### 🎮 Controls
