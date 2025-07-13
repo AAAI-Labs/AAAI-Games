@@ -236,12 +236,70 @@ class AudioManager:
     def start_music(self):
         """Start background music"""
         if not self.music_playing:
-            # Create a simple background music loop
+            # Create a fun background music loop
+            self.create_background_music()
             self.music_playing = True
+    
+    def create_background_music(self):
+        """Create a fun background music loop"""
+        sample_rate = 44100
+        duration = 2.0  # 2 second loop
+        samples = int(sample_rate * duration)
+        
+        # Create a fun upbeat melody
+        music_array = np.zeros((samples, 2), dtype=np.int16)
+        
+        # Define a simple melody (C major scale)
+        melody_notes = [
+            (523, 0.2),   # C
+            (587, 0.2),   # D
+            (659, 0.2),   # E
+            (698, 0.2),   # F
+            (784, 0.2),   # G
+            (880, 0.2),   # A
+            (988, 0.2),   # B
+            (1047, 0.2),  # C (octave)
+            (988, 0.2),   # B
+            (880, 0.2),   # A
+            (784, 0.2),   # G
+            (698, 0.2),   # F
+            (659, 0.2),   # E
+            (587, 0.2),   # D
+            (523, 0.2),   # C
+        ]
+        
+        sample_index = 0
+        for note_freq, note_duration in melody_notes:
+            note_samples = int(sample_rate * note_duration)
+            for i in range(note_samples):
+                if sample_index < samples:
+                    # Create a pleasant sine wave with some harmonics
+                    t = i / sample_rate
+                    sample = int(32767 * 0.15 * (
+                        math.sin(2 * math.pi * note_freq * t) +
+                        0.3 * math.sin(2 * math.pi * note_freq * 2 * t) +  # Second harmonic
+                        0.1 * math.sin(2 * math.pi * note_freq * 3 * t)    # Third harmonic
+                    ))
+                    music_array[sample_index, 0] = sample
+                    music_array[sample_index, 1] = sample
+                    sample_index += 1
+        
+        # Fill remaining samples with silence or repeat
+        while sample_index < samples:
+            music_array[sample_index, 0] = 0
+            music_array[sample_index, 1] = 0
+            sample_index += 1
+        
+        # Create the music sound and play it in a loop
+        self.background_music = pygame.sndarray.make_sound(music_array)
+        self.background_music.play(-1)  # -1 means loop indefinitely
     
     def stop_music(self):
         """Stop background music"""
-        self.music_playing = False
+        if self.music_playing:
+            if hasattr(self, 'background_music'):
+                self.background_music.stop()
+            self.music_playing = False
 
 class Level:
     def __init__(self, level_num, name, description, color):
@@ -313,7 +371,7 @@ class Cheetah:
         self.audio_manager = audio_manager
         self.was_on_platform = False  # Track platform state for sound effects
         
-    def update(self, platforms):
+    def update(self, clouds):  # Changed from platforms to clouds
         # Apply gravity
         self.velocity_y += GRAVITY
         self.y += self.velocity_y
@@ -322,18 +380,18 @@ class Cheetah:
         self.is_on_platform = False
         self.current_platform = None
         
-        # Check platform collisions with IMPROVED collision detection
-        for platform in platforms:
-            if self.check_platform_collision(platform):
+        # Check cloud collisions with LARGER collision box for easier landing
+        for cloud in clouds:
+            if self.check_cloud_collision(cloud):  # Changed from check_platform_collision
                 if self.velocity_y > 0:  # Falling down
-                    self.y = platform.y - 40
+                    self.y = cloud.y - 40
                     self.velocity_y = 0
                     self.is_on_ground = True
                     self.is_jumping = False
                     self.is_on_platform = True
-                    self.current_platform = platform
+                    self.current_platform = cloud
                     
-                    # Play landing sound if just landed on platform
+                    # Play landing sound if just landed on cloud
                     if not self.was_on_platform:
                         self.audio_manager.play_sound('land')
                     break
@@ -345,9 +403,7 @@ class Cheetah:
             self.is_on_ground = True
             self.is_jumping = False
             
-            # Play landing sound if just landed on ground
-            if not self.was_on_platform:
-                self.audio_manager.play_sound('land')
+            # No sound effect for ground landing
         elif not self.is_on_platform:
             self.is_on_ground = False
         
@@ -389,27 +445,21 @@ class Cheetah:
                 'color': ORANGE
             })
     
-    def check_platform_collision(self, platform):
-        # IMPROVED collision detection with better platform landing
+    def check_cloud_collision(self, cloud):  # Changed from check_platform_collision
+        # LARGER collision box for easier cloud landing
         cheetah_rect = pygame.Rect(self.x - 25, self.y - 25, 50, 50)
-        platform_rect = platform.get_rect()
-        
-        # Check if cheetah is above the platform and falling
-        if (self.velocity_y > 0 and 
-            cheetah_rect.colliderect(platform_rect) and
-            self.y < platform.y):
-            return True
-        return False
+        cloud_rect = cloud.get_rect()
+        return cheetah_rect.colliderect(cloud_rect)
     
     def jump(self):
         if self.is_on_ground or self.is_on_platform:
             # Play jump sound
             self.audio_manager.play_sound('jump')
             
-            # Special jump for bouncy platforms
-            if self.current_platform and self.current_platform.platform_type == "bouncy":
-                self.velocity_y = JUMP_FORCE * 1.3
-                self.audio_manager.play_sound('bounce')
+            # Special jump for bouncy clouds
+            if self.current_platform and self.current_platform.cloud_type == "bouncy_cloud":  # Changed from platform_type
+                self.velocity_y = JUMP_FORCE * 1.3  # Slightly higher jump
+                self.audio_manager.play_sound('bounce')  # Play bounce sound for bouncy clouds
             else:
                 self.velocity_y = JUMP_FORCE
             self.is_jumping = True
@@ -496,93 +546,232 @@ class Cheetah:
             screen.blit(rotated_surface, (self.x - rotated_surface.get_width()//2, 
                                          self.y - rotated_surface.get_height()//2))
 
-class Platform:
-    def __init__(self, x, y, platform_type="normal", level_settings=None):
+class CloudPlatform:
+    def __init__(self, x, y, cloud_type="small_cloud", level_settings=None):
         self.x = x
         self.y = y
-        self.platform_type = platform_type
+        self.cloud_type = cloud_type
         self.level_settings = level_settings or Level(1, "Tutorial", "Easy level", BLUE)
         self.movement_timer = 0
         self.original_y = y
         self.visible = True
-        self.teleport_timer = 0
+        self.bounce_timer = 0
+        self.lightning_timer = 0
+        self.trail_particles = []
         
-        # Set properties based on platform type - EASIER PLATFORMS
-        if platform_type == "normal":
-            self.width = 100  # Increased from 80
-            self.height = 25  # Increased from 20
-            self.color = GREEN
-        elif platform_type == "wide":
-            self.width = 120  # New wide platform
-            self.height = 30
-            self.color = LIME
-        elif platform_type == "moving_slow":
-            self.width = 90  # Increased from 70
-            self.height = 25  # Increased from 18
+        # Set properties based on cloud type
+        if cloud_type == "small_cloud":
+            self.width = 80
+            self.height = 40
+            self.color = WHITE
+            self.speed = 2
+        elif cloud_type == "medium_cloud":
+            self.width = 120
+            self.height = 50
+            self.color = WHITE
+            self.speed = 1.5
+        elif cloud_type == "large_cloud":
+            self.width = 160
+            self.height = 60
+            self.color = WHITE
+            self.speed = 1
+        elif cloud_type == "moving_cloud":
+            self.width = 100
+            self.height = 45
             self.color = CYAN
-        elif platform_type == "disappearing_slow":
-            self.width = 80  # Increased from 60
-            self.height = 22  # Increased from 16
+            self.speed = 2.5
+            self.movement_range = 50
+        elif cloud_type == "disappearing_cloud":
+            self.width = 90
+            self.height = 42
             self.color = YELLOW
+            self.speed = 2
             self.disappear_timer = 0
-        elif platform_type == "bouncy":
-            self.width = 95  # Increased from 75
-            self.height = 25  # Increased from 20
+            self.warning_timer = 0
+        elif cloud_type == "bouncy_cloud":
+            self.width = 95
+            self.height = 45
             self.color = PINK
-        elif platform_type == "teleport_slow":
-            self.width = 85  # Increased from 65
-            self.height = 22  # Increased from 17
-            self.color = PURPLE
+            self.speed = 2
+            self.bounce_strength = 1.5
+        elif cloud_type == "storm_cloud":
+            self.width = 140
+            self.height = 55
+            self.color = DARK_GRAY
+            self.speed = 1.8
+            self.lightning_active = False
         
     def update(self):
         self.x -= self.level_settings.obstacle_speed
         self.movement_timer += 1
         
-        # Special movement for moving platforms - SLOWER
-        if self.platform_type == "moving_slow":
-            self.y = self.original_y + math.sin(self.movement_timer * 0.05) * 30  # Slower movement
+        # Update trail particles
+        for particle in self.trail_particles[:]:
+            particle['life'] -= 1
+            particle['x'] -= 1
+            if particle['life'] <= 0:
+                self.trail_particles.remove(particle)
         
-        # Disappearing platform logic - SLOWER
-        elif self.platform_type == "disappearing_slow":
+        # Add trail particles for moving clouds
+        if self.cloud_type == "moving_cloud" and random.random() < 0.3:
+            self.trail_particles.append({
+                'x': self.x + self.width,
+                'y': self.y + self.height//2,
+                'life': 15,
+                'color': CYAN
+            })
+        
+        # Special movement for moving clouds
+        if self.cloud_type == "moving_cloud":
+            self.y = self.original_y + math.sin(self.movement_timer * 0.05) * self.movement_range
+        
+        # Disappearing cloud logic
+        elif self.cloud_type == "disappearing_cloud":
             self.disappear_timer += 1
-            if self.disappear_timer > 180:  # Disappear after 3 seconds (was 2)
+            self.warning_timer += 1
+            if self.disappear_timer > 180:  # Disappear after 3 seconds
                 self.visible = False
         
-        # Teleport platform logic - SLOWER
-        elif self.platform_type == "teleport_slow":
-            self.teleport_timer += 1
-            if self.teleport_timer > 240:  # Teleport every 4 seconds (was 3)
-                self.y = random.randint(GROUND_Y - 250, GROUND_Y - 80)
-                self.teleport_timer = 0
+        # Bouncy cloud animation
+        elif self.cloud_type == "bouncy_cloud":
+            self.bounce_timer += 1
+            bounce_offset = math.sin(self.bounce_timer * 0.2) * 3
+            self.y = self.original_y + bounce_offset
         
+        # Storm cloud lightning
+        elif self.cloud_type == "storm_cloud":
+            self.lightning_timer += 1
+            if self.lightning_timer > 120:  # Lightning every 2 seconds
+                self.lightning_active = True
+                self.lightning_timer = 0
+            elif self.lightning_timer > 10:
+                self.lightning_active = False
+    
+    def draw_small_cloud(self, screen):
+        # Draw small fluffy cloud
+        pygame.draw.circle(screen, self.color, (self.x + 20, self.y + 20), 15)
+        pygame.draw.circle(screen, self.color, (self.x + 35, self.y + 15), 12)
+        pygame.draw.circle(screen, self.color, (self.x + 50, self.y + 20), 15)
+        pygame.draw.circle(screen, self.color, (self.x + 35, self.y + 30), 10)
+        
+        # Add shadow
+        shadow_color = (200, 200, 200)
+        pygame.draw.circle(screen, shadow_color, (self.x + 22, self.y + 22), 13)
+        pygame.draw.circle(screen, shadow_color, (self.x + 37, self.y + 17), 10)
+        pygame.draw.circle(screen, shadow_color, (self.x + 52, self.y + 22), 13)
+        pygame.draw.circle(screen, shadow_color, (self.x + 37, self.y + 32), 8)
+    
+    def draw_medium_cloud(self, screen):
+        # Draw medium cloud with more detail
+        pygame.draw.circle(screen, self.color, (self.x + 25, self.y + 25), 20)
+        pygame.draw.circle(screen, self.color, (self.x + 45, self.y + 20), 18)
+        pygame.draw.circle(screen, self.color, (self.x + 65, self.y + 25), 20)
+        pygame.draw.circle(screen, self.color, (self.x + 85, self.y + 20), 15)
+        pygame.draw.circle(screen, self.color, (self.x + 45, self.y + 35), 15)
+        pygame.draw.circle(screen, self.color, (self.x + 65, self.y + 35), 12)
+        
+        # Add shadow
+        shadow_color = (200, 200, 200)
+        pygame.draw.circle(screen, shadow_color, (self.x + 27, self.y + 27), 18)
+        pygame.draw.circle(screen, shadow_color, (self.x + 47, self.y + 22), 16)
+        pygame.draw.circle(screen, shadow_color, (self.x + 67, self.y + 27), 18)
+        pygame.draw.circle(screen, shadow_color, (self.x + 87, self.y + 22), 13)
+        pygame.draw.circle(screen, shadow_color, (self.x + 47, self.y + 37), 13)
+        pygame.draw.circle(screen, shadow_color, (self.x + 67, self.y + 37), 10)
+    
+    def draw_large_cloud(self, screen):
+        # Draw large cloud with maximum detail
+        pygame.draw.circle(screen, self.color, (self.x + 30, self.y + 30), 25)
+        pygame.draw.circle(screen, self.color, (self.x + 55, self.y + 25), 23)
+        pygame.draw.circle(screen, self.color, (self.x + 80, self.y + 30), 25)
+        pygame.draw.circle(screen, self.color, (self.x + 105, self.y + 25), 20)
+        pygame.draw.circle(screen, self.color, (self.x + 130, self.y + 30), 22)
+        pygame.draw.circle(screen, self.color, (self.x + 55, self.y + 40), 18)
+        pygame.draw.circle(screen, self.color, (self.x + 80, self.y + 40), 20)
+        pygame.draw.circle(screen, self.color, (self.x + 105, self.y + 40), 15)
+        
+        # Add shadow
+        shadow_color = (200, 200, 200)
+        pygame.draw.circle(screen, shadow_color, (self.x + 32, self.y + 32), 23)
+        pygame.draw.circle(screen, shadow_color, (self.x + 57, self.y + 27), 21)
+        pygame.draw.circle(screen, shadow_color, (self.x + 82, self.y + 32), 23)
+        pygame.draw.circle(screen, shadow_color, (self.x + 107, self.y + 27), 18)
+        pygame.draw.circle(screen, shadow_color, (self.x + 132, self.y + 32), 20)
+        pygame.draw.circle(screen, shadow_color, (self.x + 57, self.y + 42), 16)
+        pygame.draw.circle(screen, shadow_color, (self.x + 82, self.y + 42), 18)
+        pygame.draw.circle(screen, shadow_color, (self.x + 107, self.y + 42), 13)
+    
+    def draw_moving_cloud(self, screen):
+        # Draw moving cloud with trail effect
+        self.draw_medium_cloud(screen)
+        
+        # Draw trail particles
+        for particle in self.trail_particles:
+            alpha = particle['life'] / 15
+            color = (*particle['color'], int(255 * alpha))
+            pygame.draw.circle(screen, particle['color'], (int(particle['x']), int(particle['y'])), 3)
+    
+    def draw_disappearing_cloud(self, screen):
+        # Draw disappearing cloud with warning effect
+        self.draw_small_cloud(screen)
+        
+        # Warning effect when about to disappear
+        if self.warning_timer > 150:
+            if self.warning_timer % 30 < 15:
+                pygame.draw.circle(screen, RED, (self.x + self.width//2, self.y + self.height//2), 25, 3)
+    
+    def draw_bouncy_cloud(self, screen):
+        # Draw bouncy cloud with spring effect
+        self.draw_medium_cloud(screen)
+        
+        # Add spring effect
+        spring_color = (255, 255, 255)
+        pygame.draw.rect(screen, spring_color, (self.x + 10, self.y + 10, self.width - 20, 8))
+        pygame.draw.rect(screen, PINK, (self.x + 15, self.y + 12, self.width - 30, 4))
+    
+    def draw_storm_cloud(self, screen):
+        # Draw storm cloud with lightning
+        storm_color = (100, 100, 100)
+        pygame.draw.circle(screen, storm_color, (self.x + 35, self.y + 30), 25)
+        pygame.draw.circle(screen, storm_color, (self.x + 60, self.y + 25), 23)
+        pygame.draw.circle(screen, storm_color, (self.x + 85, self.y + 30), 25)
+        pygame.draw.circle(screen, storm_color, (self.x + 110, self.y + 25), 20)
+        pygame.draw.circle(screen, storm_color, (self.x + 60, self.y + 40), 18)
+        pygame.draw.circle(screen, storm_color, (self.x + 85, self.y + 40), 20)
+        
+        # Lightning effect
+        if self.lightning_active:
+            lightning_points = [
+                (self.x + 20, self.y + 10),
+                (self.x + 40, self.y + 25),
+                (self.x + 30, self.y + 35),
+                (self.x + 50, self.y + 45),
+                (self.x + 70, self.y + 35),
+                (self.x + 90, self.y + 45),
+                (self.x + 110, self.y + 35)
+            ]
+            pygame.draw.lines(screen, YELLOW, False, lightning_points, 3)
+    
     def draw(self, screen):
         if not self.visible:
             return
         
-        # Draw platform with better graphics
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
-        
-        # Add platform border for better visibility
-        pygame.draw.rect(screen, WHITE, (self.x, self.y, self.width, self.height), 2)
-        
-        # Add special effects
-        if self.platform_type == "disappearing_slow":
-            # Add warning effect
-            if self.disappear_timer > 150:  # Flash when about to disappear
-                if self.disappear_timer % 30 < 15:  # Slower flashing
-                    pygame.draw.rect(screen, RED, (self.x, self.y, self.width, self.height), 3)
-        
-        elif self.platform_type == "bouncy":
-            # Add bounce effect
-            pygame.draw.rect(screen, WHITE, (self.x + 5, self.y + 5, self.width - 10, 8))
-            pygame.draw.rect(screen, PINK, (self.x + 8, self.y + 8, self.width - 16, 4))
-        
-        elif self.platform_type == "teleport_slow":
-            # Add teleport effect
-            if self.teleport_timer > 200:  # Flash before teleporting
-                if self.teleport_timer % 20 < 10:  # Slower flashing
-                    pygame.draw.rect(screen, WHITE, (self.x, self.y, self.width, self.height), 3)
-        
+        # Draw based on cloud type
+        if self.cloud_type == "small_cloud":
+            self.draw_small_cloud(screen)
+        elif self.cloud_type == "medium_cloud":
+            self.draw_medium_cloud(screen)
+        elif self.cloud_type == "large_cloud":
+            self.draw_large_cloud(screen)
+        elif self.cloud_type == "moving_cloud":
+            self.draw_moving_cloud(screen)
+        elif self.cloud_type == "disappearing_cloud":
+            self.draw_disappearing_cloud(screen)
+        elif self.cloud_type == "bouncy_cloud":
+            self.draw_bouncy_cloud(screen)
+        elif self.cloud_type == "storm_cloud":
+            self.draw_storm_cloud(screen)
+    
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
@@ -696,7 +885,7 @@ class Game:
     def reset_game(self):
         self.cheetah = Cheetah(100, GROUND_Y - 40, self.audio_manager)
         self.obstacles = []
-        self.platforms = []
+        self.clouds = []  # Changed from platforms to clouds
         self.background = Background()
         self.score = 0
         self.game_state = GameState.MENU
@@ -723,26 +912,26 @@ class Game:
             obstacle_type = random.choice(current_level_data.obstacle_types)
             self.obstacles.append(Obstacle(SCREEN_WIDTH + 50, obstacle_type, current_level_data))
     
-    def spawn_platform(self):
+    def spawn_cloud(self):  # Changed from spawn_platform
         current_level_data = self.levels[self.current_level - 1]
         
-        # Don't spawn platforms for the first 3 seconds of gameplay
+        # Don't spawn clouds for the first 3 seconds of gameplay
         if hasattr(self, 'game_start_time'):
             time_since_start = pygame.time.get_ticks() - self.game_start_time
             if time_since_start < 3000:  # 3 seconds delay
                 return
         
-        # Check if we can spawn a new platform
+        # Check if we can spawn a new cloud
         can_spawn = True
-        for platform in self.platforms:
-            if platform.x > SCREEN_WIDTH - 400:  # More spacing for platforms
+        for cloud in self.clouds:
+            if cloud.x > SCREEN_WIDTH - 400:  # More spacing for clouds
                 can_spawn = False
                 break
         
         if can_spawn and random.random() < current_level_data.platform_spawn_rate:
-            platform_type = random.choice(current_level_data.platform_types)
-            platform_y = random.randint(GROUND_Y - 300, GROUND_Y - 100)
-            self.platforms.append(Platform(SCREEN_WIDTH + 50, platform_y, platform_type, current_level_data))
+            cloud_type = random.choice(["small_cloud", "medium_cloud", "large_cloud", "moving_cloud", "disappearing_cloud", "bouncy_cloud", "storm_cloud"])
+            cloud_y = random.randint(GROUND_Y - 300, GROUND_Y - 100)
+            self.clouds.append(CloudPlatform(SCREEN_WIDTH + 50, cloud_y, cloud_type, current_level_data))
     
     def check_collision(self):
         if self.cheetah.invincible:
@@ -757,12 +946,12 @@ class Game:
     
     def update(self):
         if self.game_state == GameState.PLAYING:
-            self.cheetah.update(self.platforms)
+            self.cheetah.update(self.clouds)  # Changed from platforms to clouds
             self.background.update()
             
-            # Spawn obstacles and platforms
+            # Spawn obstacles and clouds
             self.spawn_obstacle()
-            self.spawn_platform()
+            self.spawn_cloud()  # Changed from spawn_platform
             
             # Update obstacles
             for obstacle in self.obstacles[:]:
@@ -771,11 +960,11 @@ class Game:
                     self.obstacles.remove(obstacle)
                     self.score += 1
             
-            # Update platforms
-            for platform in self.platforms[:]:
-                platform.update()
-                if platform.x + platform.width < 0:
-                    self.platforms.remove(platform)
+            # Update clouds
+            for cloud in self.clouds[:]:
+                cloud.update()
+                if cloud.x + cloud.width < 0:
+                    self.clouds.remove(cloud)
                     self.score += 1
             
             # Play score sound when score increases
@@ -890,9 +1079,9 @@ class Game:
         for obstacle in getattr(self, 'obstacles', []):
             if hasattr(obstacle, 'draw'):
                 obstacle.draw(self.screen)
-        for platform in getattr(self, 'platforms', []):
-            if hasattr(platform, 'draw'):
-                platform.draw(self.screen)
+        for cloud in getattr(self, 'clouds', []): # Changed from platforms to clouds
+            if hasattr(cloud, 'draw'):
+                cloud.draw(self.screen)
 
     def draw_game_over(self):
         self.background.draw(self.screen)
