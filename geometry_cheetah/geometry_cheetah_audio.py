@@ -311,11 +311,11 @@ class Level:
         self.best_score = 0
         self.required_score = 0
         
-        # Level-specific settings - EASIER PLATFORMS
+        # Level-specific settings - NATURE THEMED OBSTACLES
         if level_num == 1:
             self.obstacle_speed = 4
             self.obstacle_spawn_rate = 0.02
-            self.obstacle_types = ["spike", "block"]
+            self.obstacle_types = ["thorny_bush", "rock"]
             self.platform_types = ["normal", "wide"]
             self.platform_spawn_rate = 0.03
             self.required_score = 20
@@ -323,7 +323,7 @@ class Level:
         elif level_num == 2:
             self.obstacle_speed = 5
             self.obstacle_spawn_rate = 0.025
-            self.obstacle_types = ["spike", "block", "flying_spike"]
+            self.obstacle_types = ["thorny_bush", "rock", "flying_bush"]
             self.platform_types = ["normal", "wide", "moving_slow"]
             self.platform_spawn_rate = 0.04
             self.required_score = 35
@@ -331,7 +331,7 @@ class Level:
         elif level_num == 3:
             self.obstacle_speed = 6
             self.obstacle_spawn_rate = 0.03
-            self.obstacle_types = ["spike", "block", "flying_spike", "double_spike"]
+            self.obstacle_types = ["thorny_bush", "rock", "flying_bush", "double_bush"]
             self.platform_types = ["normal", "wide", "moving_slow", "bouncy"]
             self.platform_spawn_rate = 0.05
             self.required_score = 50
@@ -339,7 +339,7 @@ class Level:
         elif level_num == 4:
             self.obstacle_speed = 7
             self.obstacle_spawn_rate = 0.035
-            self.obstacle_types = ["spike", "block", "flying_spike", "double_spike", "moving_spike"]
+            self.obstacle_types = ["thorny_bush", "rock", "flying_bush", "double_bush", "moving_rock"]
             self.platform_types = ["normal", "wide", "moving_slow", "bouncy", "disappearing_slow"]
             self.platform_spawn_rate = 0.06
             self.required_score = 70
@@ -347,7 +347,7 @@ class Level:
         elif level_num == 5:
             self.obstacle_speed = 8
             self.obstacle_spawn_rate = 0.04
-            self.obstacle_types = ["spike", "block", "flying_spike", "double_spike", "moving_spike", "laser"]
+            self.obstacle_types = ["thorny_bush", "rock", "flying_bush", "double_bush", "moving_rock", "laser"]
             self.platform_types = ["normal", "wide", "moving_slow", "bouncy", "disappearing_slow", "teleport_slow"]
             self.platform_spawn_rate = 0.07
             self.required_score = 100
@@ -776,32 +776,33 @@ class CloudPlatform:
         return pygame.Rect(self.x, self.y, self.width, self.height)
 
 class Obstacle:
-    def __init__(self, x, obstacle_type="spike", level_settings=None):
+    def __init__(self, x, obstacle_type="thorny_bush", level_settings=None):
         self.x = x
         self.obstacle_type = obstacle_type
         self.level_settings = level_settings or Level(1, "Tutorial", "Easy level", BLUE)
-        self.width = 30
+        self.width = 40
         self.movement_timer = 0
         self.original_y = 0
+        self.animation_frame = 0
         
         # Set properties based on obstacle type
-        if obstacle_type == "spike":
-            self.height = 45
-            self.color = RED
-        elif obstacle_type == "block":
+        if obstacle_type == "thorny_bush":
+            self.height = 60
+            self.color = GREEN
+        elif obstacle_type == "rock":
             self.height = 50
-            self.color = RED
-        elif obstacle_type == "flying_spike":
-            self.height = 40
-            self.color = RED
+            self.color = GRAY
+        elif obstacle_type == "flying_bush":
+            self.height = 55
+            self.color = GREEN
             self.y_offset = -250
-        elif obstacle_type == "double_spike":
-            self.height = 45
-            self.color = PURPLE
-            self.width = 60
-        elif obstacle_type == "moving_spike":
-            self.height = 45
-            self.color = CYAN
+        elif obstacle_type == "double_bush":
+            self.height = 60
+            self.color = DARK_GRAY
+            self.width = 80
+        elif obstacle_type == "moving_rock":
+            self.height = 50
+            self.color = BROWN
             self.original_y = GROUND_Y - self.height
             self.y_offset = 0
         elif obstacle_type == "laser":
@@ -813,42 +814,160 @@ class Obstacle:
     def update(self):
         self.x -= self.level_settings.obstacle_speed
         self.movement_timer += 1
+        self.animation_frame += 0.2
         
         # Special movement for moving obstacles
-        if self.obstacle_type == "moving_spike":
+        if self.obstacle_type == "moving_rock":
             self.y_offset = math.sin(self.movement_timer * 0.1) * 30
         
     def draw(self, screen):
-        if self.obstacle_type == "spike":
-            points = [(self.x, GROUND_Y), (self.x + 15, GROUND_Y - self.height), (self.x + 30, GROUND_Y)]
-            pygame.draw.polygon(screen, self.color, points)
-        elif self.obstacle_type == "block":
-            pygame.draw.rect(screen, self.color, (self.x, GROUND_Y - self.height, self.width, self.height))
-        elif self.obstacle_type == "flying_spike":
-            points = [(self.x, GROUND_Y + self.y_offset), (self.x + 15, GROUND_Y + self.y_offset - self.height), (self.x + 30, GROUND_Y + self.y_offset)]
-            pygame.draw.polygon(screen, self.color, points)
-        elif self.obstacle_type == "double_spike":
-            points1 = [(self.x, GROUND_Y), (self.x + 15, GROUND_Y - self.height), (self.x + 30, GROUND_Y)]
-            points2 = [(self.x + 30, GROUND_Y), (self.x + 45, GROUND_Y - self.height), (self.x + 60, GROUND_Y)]
-            pygame.draw.polygon(screen, self.color, points1)
-            pygame.draw.polygon(screen, self.color, points2)
-        elif self.obstacle_type == "moving_spike":
-            points = [(self.x, GROUND_Y + self.y_offset), (self.x + 15, GROUND_Y + self.y_offset - self.height), (self.x + 30, GROUND_Y + self.y_offset)]
-            pygame.draw.polygon(screen, self.color, points)
+        if self.obstacle_type == "thorny_bush":
+            self.draw_thorny_bush(screen)
+        elif self.obstacle_type == "rock":
+            self.draw_rock(screen)
+        elif self.obstacle_type == "flying_bush":
+            self.draw_flying_bush(screen)
+        elif self.obstacle_type == "double_bush":
+            self.draw_double_bush(screen)
+        elif self.obstacle_type == "moving_rock":
+            self.draw_moving_rock(screen)
         elif self.obstacle_type == "laser":
             pygame.draw.rect(screen, self.color, (self.x, GROUND_Y + self.y_offset, self.width, self.height))
             pygame.draw.rect(screen, WHITE, (self.x, GROUND_Y + self.y_offset, self.width, 2))
+    
+    def draw_thorny_bush(self, screen):
+        """Draw a detailed thorny bush with animated swaying"""
+        sway_offset = math.sin(self.animation_frame) * 3
+        
+        # Main bush body (multiple overlapping circles)
+        bush_center_x = self.x + self.width // 2 + sway_offset
+        bush_center_y = GROUND_Y - self.height // 2
+        
+        # Draw main bush body
+        pygame.draw.circle(screen, GREEN, (bush_center_x, bush_center_y), 25)
+        pygame.draw.circle(screen, (50, 150, 50), (bush_center_x - 8, bush_center_y - 5), 20)
+        pygame.draw.circle(screen, (50, 150, 50), (bush_center_x + 8, bush_center_y - 5), 20)
+        
+        # Draw thorns (sharp points)
+        thorns = [
+            (bush_center_x - 15, bush_center_y - 15),
+            (bush_center_x + 15, bush_center_y - 15),
+            (bush_center_x - 10, bush_center_y - 25),
+            (bush_center_x + 10, bush_center_y - 25),
+            (bush_center_x, bush_center_y - 30),
+            (bush_center_x - 20, bush_center_y - 5),
+            (bush_center_x + 20, bush_center_y - 5)
+        ]
+        
+        for thorn in thorns:
+            # Draw thorn point
+            pygame.draw.circle(screen, DARK_GRAY, (int(thorn[0]), int(thorn[1])), 3)
+            # Draw thorn outline
+            pygame.draw.circle(screen, BLACK, (int(thorn[0]), int(thorn[1])), 3, 1)
+    
+    def draw_rock(self, screen):
+        """Draw a detailed rock with texture"""
+        rock_rect = pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
+        
+        # Main rock body
+        pygame.draw.ellipse(screen, GRAY, rock_rect)
+        pygame.draw.ellipse(screen, DARK_GRAY, rock_rect, 2)
+        
+        # Rock texture (cracks and details)
+        center_x = self.x + self.width // 2
+        center_y = GROUND_Y - self.height // 2
+        
+        # Draw cracks
+        pygame.draw.line(screen, DARK_GRAY, (center_x - 10, center_y - 15), (center_x + 5, center_y + 10), 2)
+        pygame.draw.line(screen, DARK_GRAY, (center_x - 5, center_y - 20), (center_x + 10, center_y - 5), 1)
+        pygame.draw.line(screen, DARK_GRAY, (center_x + 5, center_y - 10), (center_x - 5, center_y + 15), 1)
+        
+        # Draw highlights
+        pygame.draw.circle(screen, (200, 200, 200), (center_x - 8, center_y - 10), 3)
+        pygame.draw.circle(screen, (180, 180, 180), (center_x + 8, center_y - 8), 2)
+    
+    def draw_flying_bush(self, screen):
+        """Draw a flying thorny bush"""
+        bush_center_x = self.x + self.width // 2
+        bush_center_y = GROUND_Y + self.y_offset - self.height // 2
+        
+        # Main bush body
+        pygame.draw.circle(screen, GREEN, (bush_center_x, bush_center_y), 25)
+        pygame.draw.circle(screen, (50, 150, 50), (bush_center_x - 8, bush_center_y - 5), 20)
+        pygame.draw.circle(screen, (50, 150, 50), (bush_center_x + 8, bush_center_y - 5), 20)
+        
+        # Flying thorns (more aggressive)
+        thorns = [
+            (bush_center_x - 18, bush_center_y - 18),
+            (bush_center_x + 18, bush_center_y - 18),
+            (bush_center_x - 12, bush_center_y - 28),
+            (bush_center_x + 12, bush_center_y - 28),
+            (bush_center_x, bush_center_y - 32),
+            (bush_center_x - 22, bush_center_y - 8),
+            (bush_center_x + 22, bush_center_y - 8)
+        ]
+        
+        for thorn in thorns:
+            pygame.draw.circle(screen, DARK_GRAY, (int(thorn[0]), int(thorn[1])), 4)
+            pygame.draw.circle(screen, BLACK, (int(thorn[0]), int(thorn[1])), 4, 1)
+    
+    def draw_double_bush(self, screen):
+        """Draw two thorny bushes side by side"""
+        # First bush
+        bush1_x = self.x + 20
+        bush1_y = GROUND_Y - self.height // 2
+        
+        pygame.draw.circle(screen, GREEN, (bush1_x, bush1_y), 25)
+        pygame.draw.circle(screen, (50, 150, 50), (bush1_x - 8, bush1_y - 5), 20)
+        pygame.draw.circle(screen, (50, 150, 50), (bush1_x + 8, bush1_y - 5), 20)
+        
+        # Second bush
+        bush2_x = self.x + 60
+        bush2_y = GROUND_Y - self.height // 2
+        
+        pygame.draw.circle(screen, GREEN, (bush2_x, bush2_y), 25)
+        pygame.draw.circle(screen, (50, 150, 50), (bush2_x - 8, bush2_y - 5), 20)
+        pygame.draw.circle(screen, (50, 150, 50), (bush2_x + 8, bush2_y - 5), 20)
+        
+        # Thorns for both bushes
+        thorns1 = [(bush1_x - 15, bush1_y - 15), (bush1_x + 15, bush1_y - 15), (bush1_x, bush1_y - 30)]
+        thorns2 = [(bush2_x - 15, bush2_y - 15), (bush2_x + 15, bush2_y - 15), (bush2_x, bush2_y - 30)]
+        
+        for thorn in thorns1 + thorns2:
+            pygame.draw.circle(screen, DARK_GRAY, (int(thorn[0]), int(thorn[1])), 3)
+            pygame.draw.circle(screen, BLACK, (int(thorn[0]), int(thorn[1])), 3, 1)
+    
+    def draw_moving_rock(self, screen):
+        """Draw a moving rock with enhanced details"""
+        rock_rect = pygame.Rect(self.x, GROUND_Y + self.y_offset - self.height, self.width, self.height)
+        
+        # Main rock body
+        pygame.draw.ellipse(screen, BROWN, rock_rect)
+        pygame.draw.ellipse(screen, DARK_GRAY, rock_rect, 2)
+        
+        # Rock texture
+        center_x = self.x + self.width // 2
+        center_y = GROUND_Y + self.y_offset - self.height // 2
+        
+        # Dynamic cracks based on movement
+        crack_offset = int(math.sin(self.movement_timer * 0.2) * 2)
+        pygame.draw.line(screen, DARK_GRAY, (center_x - 10 + crack_offset, center_y - 15), (center_x + 5, center_y + 10), 2)
+        pygame.draw.line(screen, DARK_GRAY, (center_x - 5, center_y - 20), (center_x + 10, center_y - 5), 1)
+        
+        # Highlights
+        pygame.draw.circle(screen, (200, 200, 200), (center_x - 8, center_y - 10), 3)
+        pygame.draw.circle(screen, (180, 180, 180), (center_x + 8, center_y - 8), 2)
         
     def get_rect(self):
-        if self.obstacle_type == "spike":
+        if self.obstacle_type == "thorny_bush":
             return pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
-        elif self.obstacle_type == "block":
+        elif self.obstacle_type == "rock":
             return pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
-        elif self.obstacle_type == "flying_spike":
+        elif self.obstacle_type == "flying_bush":
             return pygame.Rect(self.x, GROUND_Y + self.y_offset - self.height, self.width, self.height)
-        elif self.obstacle_type == "double_spike":
+        elif self.obstacle_type == "double_bush":
             return pygame.Rect(self.x, GROUND_Y - self.height, self.width, self.height)
-        elif self.obstacle_type == "moving_spike":
+        elif self.obstacle_type == "moving_rock":
             return pygame.Rect(self.x, GROUND_Y + self.y_offset - self.height, self.width, self.height)
         elif self.obstacle_type == "laser":
             return pygame.Rect(self.x, GROUND_Y + self.y_offset, self.width, self.height)
