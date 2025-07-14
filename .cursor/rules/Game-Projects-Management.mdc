@@ -1,0 +1,23 @@
+# Game Projects Management Rules
+
+## Core Rules for Game Development
+
+### 1. Python Version Requirement
+
+- **ALWAYS use Python 3** for all game development
+- Never use Python 2 for new games
+
+### 2. Project Structure
+
+- **Each game must be in a separate folder** with a descriptive name
+- Each game folder should be self-contained
+
+### 3. Virtual Environment Management
+
+- **Create a separate virtual environment for each game**
+- Always activate the virtual environment before development
+
+### 4. Dependencies Management
+
+- **Every game must have a `requirements.txt` file**
+- Include common dependencies such as pygame
