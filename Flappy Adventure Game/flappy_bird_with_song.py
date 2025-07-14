@@ -186,19 +186,8 @@ class Bird:
         # Apply gravity (reduced if speed boost is active)
         gravity = GRAVITY * 0.7 if speed_boost else GRAVITY
 
-        if speed_boost:
-            # During speed boost, make bird bob up and down instead of falling
-            import math
-            bob_time = pygame.time.get_ticks() * 0.005  # Time-based bobbing
-            bob_offset = math.sin(bob_time) * 3  # Bob up and down by 3 pixels
-            self.velocity = bob_offset * 0.5  # Gentle bobbing motion
-
-            # Bird stays at the same X position during speed boost
-            # The game world moves faster around it
-        else:
-            # Normal gravity when not speed boosted
-            self.velocity += gravity
-
+        # Always apply gravity and allow normal movement
+        self.velocity += gravity
         self.y += self.velocity
         self.rect.y = self.y
 
@@ -283,14 +272,19 @@ class Bird:
 class Background:
     def __init__(self):
         self.current_theme = "city"
-        self.themes = ["city", "forest", "mountains", "desert", "space"]
+        self.themes = ["city", "forest", "mountains", "desert", "space", "ocean", "sunset", "winter", "volcano", "neon_city", "candy_land"]
         self.theme_index = 0
         self.clouds = []
         self.buildings = []
         self.trees = []
         self.mountains = []
         self.stars = []
-        self.score_threshold = 10
+        self.bubbles = []
+        self.snowflakes = []
+        self.lava_particles = []
+        self.neon_lights = []
+        self.candy_elements = []
+        self.score_threshold = 8  # Reduced to cycle through themes faster
 
         # Initialize clouds
         for _ in range(5):
@@ -311,6 +305,21 @@ class Background:
 
         # Initialize stars for space
         self.generate_stars()
+
+        # Initialize bubbles for ocean
+        self.generate_bubbles()
+
+        # Initialize snowflakes for winter
+        self.generate_snowflakes()
+
+        # Initialize lava particles for volcano
+        self.generate_lava_particles()
+
+        # Initialize neon lights for neon city
+        self.generate_neon_lights()
+
+        # Initialize candy elements for candy land
+        self.generate_candy_elements()
 
     def generate_buildings(self):
         self.buildings = []
@@ -351,6 +360,58 @@ class Background:
                 'y': random.randint(0, SCREEN_HEIGHT - 100),
                 'size': random.randint(1, 3),
                 'twinkle': random.randint(0, 100)
+            })
+
+    def generate_bubbles(self):
+        self.bubbles = []
+        for _ in range(10):
+            self.bubbles.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(SCREEN_HEIGHT - 100, SCREEN_HEIGHT),
+                'size': random.randint(10, 20),
+                'speed': random.uniform(0.5, 1.5)
+            })
+
+    def generate_snowflakes(self):
+        self.snowflakes = []
+        for _ in range(20):
+            self.snowflakes.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, SCREEN_HEIGHT - 100),
+                'size': random.randint(5, 10),
+                'speed': random.uniform(0.3, 0.8)
+            })
+
+    def generate_lava_particles(self):
+        self.lava_particles = []
+        for _ in range(10):
+            self.lava_particles.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(SCREEN_HEIGHT - 100, SCREEN_HEIGHT),
+                'size': random.randint(5, 15),
+                'speed': random.uniform(0.5, 1.5),
+                'color': (255, 100, 0) # Reddish lava
+            })
+
+    def generate_neon_lights(self):
+        self.neon_lights = []
+        for _ in range(10):
+            self.neon_lights.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, SCREEN_HEIGHT - 100),
+                'size': random.randint(10, 20),
+                'color': (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
+            })
+
+    def generate_candy_elements(self):
+        self.candy_elements = []
+        for _ in range(10):
+            self.candy_elements.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, SCREEN_HEIGHT - 100),
+                'type': random.choice(['heart', 'star', 'diamond', 'candy_cane']),
+                'color': random.choice([RED, YELLOW, PURPLE, GOLD]),
+                'size': random.randint(10, 20)
             })
 
     def update_theme(self, score):
@@ -394,6 +455,41 @@ class Background:
         for star in self.stars:
             star['twinkle'] = (star['twinkle'] + 1) % 200
 
+        # Update bubbles
+        for bubble in self.bubbles:
+            bubble['y'] -= bubble['speed']
+            if bubble['y'] < -bubble['size']:
+                bubble['y'] = SCREEN_HEIGHT + bubble['size']
+                bubble['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update snowflakes
+        for snowflake in self.snowflakes:
+            snowflake['y'] -= snowflake['speed']
+            if snowflake['y'] < -snowflake['size']:
+                snowflake['y'] = SCREEN_HEIGHT + snowflake['size']
+                snowflake['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update lava particles
+        for lava_particle in self.lava_particles:
+            lava_particle['y'] -= lava_particle['speed']
+            if lava_particle['y'] < -lava_particle['size']:
+                lava_particle['y'] = SCREEN_HEIGHT + lava_particle['size']
+                lava_particle['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update neon lights
+        for neon_light in self.neon_lights:
+            neon_light['y'] -= 0.5 # Slight upward movement
+            if neon_light['y'] < -neon_light['size']:
+                neon_light['y'] = SCREEN_HEIGHT + neon_light['size']
+                neon_light['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update candy elements
+        for candy_element in self.candy_elements:
+            candy_element['y'] -= 0.8 # Slight upward movement
+            if candy_element['y'] < -20:
+                candy_element['y'] = SCREEN_HEIGHT + 20
+                candy_element['x'] = random.randint(0, SCREEN_WIDTH)
+
     def draw(self, screen):
         if self.current_theme == "city":
             self.draw_city(screen)
@@ -405,6 +501,18 @@ class Background:
             self.draw_desert(screen)
         elif self.current_theme == "space":
             self.draw_space(screen)
+        elif self.current_theme == "ocean":
+            self.draw_ocean(screen)
+        elif self.current_theme == "sunset":
+            self.draw_sunset(screen)
+        elif self.current_theme == "winter":
+            self.draw_winter(screen)
+        elif self.current_theme == "volcano":
+            self.draw_volcano(screen)
+        elif self.current_theme == "neon_city":
+            self.draw_neon_city(screen)
+        elif self.current_theme == "candy_land":
+            self.draw_candy_land(screen)
 
     def draw_city(self, screen):
         # Sky gradient
@@ -519,6 +627,147 @@ class Background:
         pygame.draw.circle(screen, ORANGE, (600, 150), 25)
         pygame.draw.circle(screen, LIGHT_BLUE, (700, 80), 20)
 
+    def draw_ocean(self, screen):
+        # Blue ocean background
+        screen.fill(DARK_BLUE)
+
+        # Draw water gradient
+        for y in range(SCREEN_HEIGHT - 100, SCREEN_HEIGHT):
+            color_ratio = (SCREEN_HEIGHT - y) / (SCREEN_HEIGHT - (SCREEN_HEIGHT - 100))
+            r = int(135 + (100 - 135) * color_ratio)
+            g = int(206 + (150 - 206) * color_ratio)
+            b = int(235 + (200 - 235) * color_ratio)
+            pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+
+        # Draw bubbles
+        for bubble in self.bubbles:
+            pygame.draw.circle(screen, WHITE, (bubble['x'], bubble['y']), bubble['size'])
+
+        # Draw fish (example)
+        for i in range(0, SCREEN_WIDTH, 100):
+            pygame.draw.circle(screen, WHITE, (i + 50, SCREEN_HEIGHT - 100 - 50), 20)
+
+    def draw_sunset(self, screen):
+        # Orange sunset background
+        screen.fill(DARK_GRAY)
+
+        # Draw sky gradient
+        for y in range(SCREEN_HEIGHT - 100):
+            color_ratio = y / (SCREEN_HEIGHT - 100)
+            r = int(135 + (255 - 135) * color_ratio)
+            g = int(206 + (200 - 206) * color_ratio)
+            b = int(235 + (100 - 235) * color_ratio)
+            pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+
+        # Draw mountains
+        for mountain in self.mountains:
+            points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                     (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                     (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+            pygame.draw.polygon(screen, mountain['color'], points)
+            pygame.draw.polygon(screen, BLACK, points, 2)
+
+        # Draw clouds
+        for cloud in self.clouds:
+            pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+    def draw_winter(self, screen):
+        # White winter background
+        screen.fill(WHITE)
+
+        # Draw snowflakes
+        for snowflake in self.snowflakes:
+            pygame.draw.circle(screen, WHITE, (snowflake['x'], snowflake['y']), snowflake['size'])
+
+        # Draw mountains
+        for mountain in self.mountains:
+            points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                     (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                     (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+            pygame.draw.polygon(screen, mountain['color'], points)
+            pygame.draw.polygon(screen, BLACK, points, 2)
+
+        # Draw clouds
+        for cloud in self.clouds:
+            pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+    def draw_volcano(self, screen):
+        # Red volcanic background
+        screen.fill(RED)
+
+        # Draw lava particles
+        for lava_particle in self.lava_particles:
+            pygame.draw.circle(screen, lava_particle['color'], (lava_particle['x'], lava_particle['y']), lava_particle['size'])
+
+        # Draw mountains
+        for mountain in self.mountains:
+            points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                     (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                     (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+            pygame.draw.polygon(screen, mountain['color'], points)
+            pygame.draw.polygon(screen, BLACK, points, 2)
+
+        # Draw clouds
+        for cloud in self.clouds:
+            pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+    def draw_neon_city(self, screen):
+        # Dark blue background with neon lights
+        screen.fill(DARK_BLUE)
+
+        # Draw neon lights
+        for neon_light in self.neon_lights:
+            pygame.draw.circle(screen, neon_light['color'], (neon_light['x'], neon_light['y']), neon_light['size'])
+
+        # Draw buildings
+        for building in self.buildings:
+            pygame.draw.rect(screen, building['color'],
+                           (building['x'], SCREEN_HEIGHT - 100 - building['height'],
+                            60, building['height']))
+            pygame.draw.rect(screen, BLACK,
+                           (building['x'], SCREEN_HEIGHT - 100 - building['height'],
+                            60, building['height']), 2)
+
+            # Windows
+            for window_y in range(building['height'] - 20, 0, 30):
+                for window_x in range(10, 50, 15):
+                    if random.random() > 0.3:  # Some windows lit
+                        pygame.draw.rect(screen, YELLOW,
+                                       (building['x'] + window_x,
+                                        SCREEN_HEIGHT - 100 - building['height'] + window_y,
+                                        8, 8))
+
+        # Draw clouds
+        for cloud in self.clouds:
+            pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+    def draw_candy_land(self, screen):
+        # Pink candy land background
+        screen.fill(PURPLE)
+
+        # Draw candy elements
+        for candy_element in self.candy_elements:
+            if candy_element['type'] == 'heart':
+                pygame.draw.circle(screen, candy_element['color'], (candy_element['x'], candy_element['y']), candy_element['size'])
+            elif candy_element['type'] == 'star':
+                pygame.draw.circle(screen, candy_element['color'], (candy_element['x'], candy_element['y']), candy_element['size'])
+            elif candy_element['type'] == 'diamond':
+                pygame.draw.rect(screen, candy_element['color'], (candy_element['x'], candy_element['y'], candy_element['size'], candy_element['size']))
+            elif candy_element['type'] == 'candy_cane':
+                pygame.draw.line(screen, candy_element['color'], (candy_element['x'], candy_element['y']), (candy_element['x'] + candy_element['size'], candy_element['y'] + candy_element['size']), 3)
+
+        # Draw mountains
+        for mountain in self.mountains:
+            points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                     (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                     (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+            pygame.draw.polygon(screen, mountain['color'], points)
+            pygame.draw.polygon(screen, BLACK, points, 2)
+
+        # Draw clouds
+        for cloud in self.clouds:
+            pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
 class Pipe:
     def __init__(self, x, theme="city"):
         self.x = x
@@ -542,6 +791,18 @@ class Pipe:
             self.draw_desert_pipe(screen)
         elif theme == "space":
             self.draw_space_pipe(screen)
+        elif theme == "ocean":
+            self.draw_ocean_pipe(screen)
+        elif theme == "sunset":
+            self.draw_sunset_pipe(screen)
+        elif theme == "winter":
+            self.draw_winter_pipe(screen)
+        elif theme == "volcano":
+            self.draw_volcano_pipe(screen)
+        elif theme == "neon_city":
+            self.draw_neon_city_pipe(screen)
+        elif theme == "candy_land":
+            self.draw_candy_land_pipe(screen)
 
     def draw_city_pipe(self, screen):
         # Building-like pipes
@@ -643,6 +904,98 @@ class Pipe:
         for y in range(bottom_y + 10, bottom_y + self.bottom_height - 10, 20):
             pygame.draw.circle(screen, RED, (self.x + 10, y), 3)
             pygame.draw.circle(screen, BLUE, (self.x + PIPE_WIDTH - 10, y), 3)
+
+    def draw_ocean_pipe(self, screen):
+        # Ocean-like pipes
+        color = LIGHT_BLUE
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, BLACK, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Fish
+        for i in range(0, PIPE_WIDTH, 10):
+            pygame.draw.circle(screen, WHITE, (self.x + i + 5, bottom_y + 50), 10)
+
+    def draw_sunset_pipe(self, screen):
+        # Sunset-like pipes
+        color = ORANGE
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, BLACK, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Sun
+        pygame.draw.circle(screen, YELLOW, (self.x + PIPE_WIDTH//2, self.top_height - 50), 40)
+        pygame.draw.circle(screen, YELLOW, (self.x + PIPE_WIDTH//2, self.top_height - 50), 30)
+
+    def draw_winter_pipe(self, screen):
+        # Winter-like pipes
+        color = WHITE
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, BLACK, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Snowflake
+        pygame.draw.circle(screen, WHITE, (self.x + PIPE_WIDTH//2, self.top_height - 50), 20)
+
+    def draw_volcano_pipe(self, screen):
+        # Volcano-like pipes
+        color = RED
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, BLACK, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Lava
+        pygame.draw.rect(screen, (255, 100, 0), (self.x - 5, self.top_height - 15, PIPE_WIDTH + 10, 15))
+        pygame.draw.rect(screen, (255, 100, 0), (self.x - 5, bottom_y, PIPE_WIDTH + 10, 15))
+
+    def draw_neon_city_pipe(self, screen):
+        # Neon city-like pipes
+        color = SILVER
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, WHITE, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, WHITE, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Lights
+        for y in range(10, self.top_height - 10, 20):
+            pygame.draw.circle(screen, RED, (self.x + 10, y), 3)
+            pygame.draw.circle(screen, BLUE, (self.x + PIPE_WIDTH - 10, y), 3)
+        for y in range(bottom_y + 10, bottom_y + self.bottom_height - 10, 20):
+            pygame.draw.circle(screen, RED, (self.x + 10, y), 3)
+            pygame.draw.circle(screen, BLUE, (self.x + PIPE_WIDTH - 10, y), 3)
+
+    def draw_candy_land_pipe(self, screen):
+        # Candy land-like pipes
+        color = PURPLE
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, WHITE, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, WHITE, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Candy cane
+        pygame.draw.line(screen, WHITE, (self.x + PIPE_WIDTH//2, self.top_height - 50), (self.x + PIPE_WIDTH//2 + 10, self.top_height - 50 + 10), 3)
 
     def get_rects(self):
         top_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.top_height)
@@ -791,16 +1144,10 @@ class Game:
             if current_time > end_time:
                 if effect == 'speed':
                     self.speed_boost = False
-                    # Add 2 seconds of invincibility after speed boost ends
-                    if 'invincible' in self.powerup_timers and self.powerup_timers['invincible'] == end_time:
-                        # Extend invincibility for 2 more seconds
-                        self.powerup_timers['invincible'] = current_time + 2000  # 2000ms = 2 seconds
-                        print("Speed boost ended! 2 seconds of invincibility remaining!")
-                    else:
-                        # If no invincibility was active, add it for 2 seconds
-                        self.invincible = True
-                        self.powerup_timers['invincible'] = current_time + 2000
-                        print("Speed boost ended! 2 seconds of invincibility granted!")
+                    # Always add 2 seconds of invincibility after speed boost ends
+                    self.invincible = True
+                    self.powerup_timers['invincible'] = current_time + 2000  # 2000ms = 2 seconds
+                    print("Speed boost ended! 2 seconds of invincibility granted!")
                 elif effect == 'invincible':
                     self.invincible = False
                     print("Invincible effect ended!")
@@ -956,6 +1303,126 @@ class Game:
             pygame.draw.rect(screen, GOLD, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
         elif self.background.current_theme == "space":
             pygame.draw.rect(screen, DARK_BLUE, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+        elif self.background.current_theme == "ocean":
+            pygame.draw.rect(screen, DARK_BLUE, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+            # Draw water gradient
+            for y in range(SCREEN_HEIGHT - 100, SCREEN_HEIGHT):
+                color_ratio = (SCREEN_HEIGHT - y) / (SCREEN_HEIGHT - (SCREEN_HEIGHT - 100))
+                r = int(135 + (100 - 135) * color_ratio)
+                g = int(206 + (150 - 206) * color_ratio)
+                b = int(235 + (200 - 235) * color_ratio)
+                pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+
+        elif self.background.current_theme == "sunset":
+            pygame.draw.rect(screen, DARK_GRAY, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+            # Draw sky gradient
+            for y in range(SCREEN_HEIGHT - 100):
+                color_ratio = y / (SCREEN_HEIGHT - 100)
+                r = int(135 + (255 - 135) * color_ratio)
+                g = int(206 + (200 - 206) * color_ratio)
+                b = int(235 + (100 - 235) * color_ratio)
+                pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+
+            # Draw mountains
+            for mountain in self.background.mountains:
+                points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                         (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                         (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+                pygame.draw.polygon(screen, mountain['color'], points)
+                pygame.draw.polygon(screen, BLACK, points, 2)
+
+            # Draw clouds
+            for cloud in self.background.clouds:
+                pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+        elif self.background.current_theme == "winter":
+            pygame.draw.rect(screen, WHITE, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+            # Draw snowflakes
+            for snowflake in self.background.snowflakes:
+                pygame.draw.circle(screen, WHITE, (snowflake['x'], snowflake['y']), snowflake['size'])
+
+            # Draw mountains
+            for mountain in self.background.mountains:
+                points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                         (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                         (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+                pygame.draw.polygon(screen, mountain['color'], points)
+                pygame.draw.polygon(screen, BLACK, points, 2)
+
+            # Draw clouds
+            for cloud in self.background.clouds:
+                pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+        elif self.background.current_theme == "volcano":
+            pygame.draw.rect(screen, RED, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+            # Draw lava particles
+            for lava_particle in self.background.lava_particles:
+                pygame.draw.circle(screen, lava_particle['color'], (lava_particle['x'], lava_particle['y']), lava_particle['size'])
+
+            # Draw mountains
+            for mountain in self.background.mountains:
+                points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                         (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                         (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+                pygame.draw.polygon(screen, mountain['color'], points)
+                pygame.draw.polygon(screen, BLACK, points, 2)
+
+            # Draw clouds
+            for cloud in self.background.clouds:
+                pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+        elif self.background.current_theme == "neon_city":
+            pygame.draw.rect(screen, DARK_BLUE, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+            # Draw neon lights
+            for neon_light in self.background.neon_lights:
+                pygame.draw.circle(screen, neon_light['color'], (neon_light['x'], neon_light['y']), neon_light['size'])
+
+            # Draw buildings
+            for building in self.background.buildings:
+                pygame.draw.rect(screen, building['color'],
+                               (building['x'], SCREEN_HEIGHT - 100 - building['height'],
+                                60, building['height']))
+                pygame.draw.rect(screen, BLACK,
+                               (building['x'], SCREEN_HEIGHT - 100 - building['height'],
+                                60, building['height']), 2)
+
+                # Windows
+                for window_y in range(building['height'] - 20, 0, 30):
+                    for window_x in range(10, 50, 15):
+                        if random.random() > 0.3:  # Some windows lit
+                            pygame.draw.rect(screen, YELLOW,
+                                           (building['x'] + window_x,
+                                            SCREEN_HEIGHT - 100 - building['height'] + window_y,
+                                            8, 8))
+
+            # Draw clouds
+            for cloud in self.background.clouds:
+                pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
+
+        elif self.background.current_theme == "candy_land":
+            pygame.draw.rect(screen, PURPLE, (0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100))
+            # Draw candy elements
+            for candy_element in self.background.candy_elements:
+                if candy_element['type'] == 'heart':
+                    pygame.draw.circle(screen, candy_element['color'], (candy_element['x'], candy_element['y']), candy_element['size'])
+                elif candy_element['type'] == 'star':
+                    pygame.draw.circle(screen, candy_element['color'], (candy_element['x'], candy_element['y']), candy_element['size'])
+                elif candy_element['type'] == 'diamond':
+                    pygame.draw.rect(screen, candy_element['color'], (candy_element['x'], candy_element['y'], candy_element['size'], candy_element['size']))
+                elif candy_element['type'] == 'candy_cane':
+                    pygame.draw.line(screen, candy_element['color'], (candy_element['x'], candy_element['y']), (candy_element['x'] + candy_element['size'], candy_element['y'] + candy_element['size']), 3)
+
+            # Draw mountains
+            for mountain in self.background.mountains:
+                points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                         (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                         (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+                pygame.draw.polygon(screen, mountain['color'], points)
+                pygame.draw.polygon(screen, BLACK, points, 2)
+
+            # Draw clouds
+            for cloud in self.background.clouds:
+                pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
 
         for pipe in self.pipes:
             pipe.draw(screen, self.background.current_theme)
