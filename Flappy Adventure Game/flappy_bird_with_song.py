@@ -60,30 +60,121 @@ def create_note(frequency, duration, sample_rate=44100):
     except:
         return None
 
-def create_flappy_bird_song():
-    """Create the Flappy Adventure theme song"""
+def create_theme_song(theme):
+    """Create theme-specific music"""
     try:
         import numpy as np
 
         # Musical notes (frequencies in Hz)
         notes = {
-            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
-            'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25,
-            'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99
+            'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61,
+            'G3': 196.00, 'A3': 220.00, 'B3': 246.94, 'C4': 261.63,
+            'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00,
+            'A4': 440.00, 'B4': 493.88, 'C5': 523.25, 'D5': 587.33,
+            'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00
         }
 
-        # Flappy Adventure melody (simplified version)
-        melody = [
-            ('C5', 0.3), ('E5', 0.3), ('G5', 0.3), ('C5', 0.3),
-            ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3),
-            ('C5', 0.3), ('E5', 0.3), ('G5', 0.3), ('C5', 0.3),
-            ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3),
-            ('A4', 0.3), ('C5', 0.3), ('E5', 0.3), ('A4', 0.3),
-            ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3),
-            ('C5', 0.3), ('E5', 0.3), ('G5', 0.3), ('C5', 0.3),
-            ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3)
-        ]
+        # Theme-specific melodies
+        theme_melodies = {
+            'city': [
+                ('C4', 0.3), ('E4', 0.3), ('G4', 0.3), ('C5', 0.3),
+                ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3),
+                ('A4', 0.3), ('C5', 0.3), ('E5', 0.3), ('A4', 0.3),
+                ('G4', 0.3), ('E4', 0.3), ('C4', 0.3), ('G4', 0.3)
+            ],
+            'forest': [
+                ('D4', 0.4), ('F4', 0.4), ('A4', 0.4), ('D5', 0.4),
+                ('A4', 0.4), ('F4', 0.4), ('D4', 0.4), ('A4', 0.4),
+                ('G4', 0.4), ('B4', 0.4), ('D5', 0.4), ('G4', 0.4),
+                ('F4', 0.4), ('D4', 0.4), ('A4', 0.4), ('F4', 0.4)
+            ],
+            'mountains': [
+                ('E4', 0.5), ('G4', 0.5), ('B4', 0.5), ('E5', 0.5),
+                ('B4', 0.5), ('G4', 0.5), ('E4', 0.5), ('B4', 0.5),
+                ('A4', 0.5), ('C5', 0.5), ('E5', 0.5), ('A4', 0.5),
+                ('G4', 0.5), ('E4', 0.5), ('B4', 0.5), ('G4', 0.5)
+            ],
+            'desert': [
+                ('F4', 0.6), ('A4', 0.6), ('C5', 0.6), ('F5', 0.6),
+                ('C5', 0.6), ('A4', 0.6), ('F4', 0.6), ('C5', 0.6),
+                ('B4', 0.6), ('D5', 0.6), ('F5', 0.6), ('B4', 0.6),
+                ('A4', 0.6), ('F4', 0.6), ('C5', 0.6), ('A4', 0.6)
+            ],
+            'space': [
+                ('G4', 0.7), ('B4', 0.7), ('D5', 0.7), ('G5', 0.7),
+                ('D5', 0.7), ('B4', 0.7), ('G4', 0.7), ('D5', 0.7),
+                ('C5', 0.7), ('E5', 0.7), ('G5', 0.7), ('C5', 0.7),
+                ('B4', 0.7), ('G4', 0.7), ('D5', 0.7), ('B4', 0.7)
+            ],
+            'ocean': [
+                ('A4', 0.4), ('C5', 0.4), ('E5', 0.4), ('A5', 0.4),
+                ('E5', 0.4), ('C5', 0.4), ('A4', 0.4), ('E5', 0.4),
+                ('D5', 0.4), ('F5', 0.4), ('A5', 0.4), ('D5', 0.4),
+                ('C5', 0.4), ('A4', 0.4), ('E5', 0.4), ('C5', 0.4)
+            ],
+            'sunset': [
+                ('B4', 0.5), ('D5', 0.5), ('F5', 0.5), ('B5', 0.5),
+                ('F5', 0.5), ('D5', 0.5), ('B4', 0.5), ('F5', 0.5),
+                ('E5', 0.5), ('G5', 0.5), ('B5', 0.5), ('E5', 0.5),
+                ('D5', 0.5), ('B4', 0.5), ('F5', 0.5), ('D5', 0.5)
+            ],
+            'winter': [
+                ('C5', 0.6), ('E5', 0.6), ('G5', 0.6), ('C6', 0.6),
+                ('G5', 0.6), ('E5', 0.6), ('C5', 0.6), ('G5', 0.6),
+                ('F5', 0.6), ('A5', 0.6), ('C6', 0.6), ('F5', 0.6),
+                ('E5', 0.6), ('C5', 0.6), ('G5', 0.6), ('E5', 0.6)
+            ],
+            'volcano': [
+                ('D5', 0.3), ('F5', 0.3), ('A5', 0.3), ('D6', 0.3),
+                ('A5', 0.3), ('F5', 0.3), ('D5', 0.3), ('A5', 0.3),
+                ('G5', 0.3), ('B5', 0.3), ('D6', 0.3), ('G5', 0.3),
+                ('F5', 0.3), ('D5', 0.3), ('A5', 0.3), ('F5', 0.3)
+            ],
+            'neon_city': [
+                ('E5', 0.4), ('G5', 0.4), ('B5', 0.4), ('E6', 0.4),
+                ('B5', 0.4), ('G5', 0.4), ('E5', 0.4), ('B5', 0.4),
+                ('A5', 0.4), ('C6', 0.4), ('E6', 0.4), ('A5', 0.4),
+                ('G5', 0.4), ('E5', 0.4), ('B5', 0.4), ('G5', 0.4)
+            ],
+            'candy_land': [
+                ('F5', 0.3), ('A5', 0.3), ('C6', 0.3), ('F6', 0.3),
+                ('C6', 0.3), ('A5', 0.3), ('F5', 0.3), ('C6', 0.3),
+                ('B5', 0.3), ('D6', 0.3), ('F6', 0.3), ('B5', 0.3),
+                ('A5', 0.3), ('F5', 0.3), ('C6', 0.3), ('A5', 0.3)
+            ],
+            'underwater': [
+                ('G5', 0.5), ('B5', 0.5), ('D6', 0.5), ('G6', 0.5),
+                ('D6', 0.5), ('B5', 0.5), ('G5', 0.5), ('D6', 0.5),
+                ('C6', 0.5), ('E6', 0.5), ('G6', 0.5), ('C6', 0.5),
+                ('B5', 0.5), ('G5', 0.5), ('D6', 0.5), ('B5', 0.5)
+            ],
+            'cyberpunk': [
+                ('A5', 0.4), ('C6', 0.4), ('E6', 0.4), ('A6', 0.4),
+                ('E6', 0.4), ('C6', 0.4), ('A5', 0.4), ('E6', 0.4),
+                ('D6', 0.4), ('F6', 0.4), ('A6', 0.4), ('D6', 0.4),
+                ('C6', 0.4), ('A5', 0.4), ('E6', 0.4), ('C6', 0.4)
+            ],
+            'fantasy': [
+                ('B5', 0.6), ('D6', 0.6), ('F6', 0.6), ('B6', 0.6),
+                ('F6', 0.6), ('D6', 0.6), ('B5', 0.6), ('F6', 0.6),
+                ('E6', 0.6), ('G6', 0.6), ('B6', 0.6), ('E6', 0.6),
+                ('D6', 0.6), ('B5', 0.6), ('F6', 0.6), ('D6', 0.6)
+            ],
+            'steampunk': [
+                ('C6', 0.5), ('E6', 0.5), ('G6', 0.5), ('C7', 0.5),
+                ('G6', 0.5), ('E6', 0.5), ('C6', 0.5), ('G6', 0.5),
+                ('F6', 0.5), ('A6', 0.5), ('C7', 0.5), ('F6', 0.5),
+                ('E6', 0.5), ('C6', 0.5), ('G6', 0.5), ('E6', 0.5)
+            ],
+            'apocalypse': [
+                ('D6', 0.7), ('F6', 0.7), ('A6', 0.7), ('D7', 0.7),
+                ('A6', 0.7), ('F6', 0.7), ('D6', 0.7), ('A6', 0.7),
+                ('G6', 0.7), ('B6', 0.7), ('D7', 0.7), ('G6', 0.7),
+                ('F6', 0.7), ('D6', 0.7), ('A6', 0.7), ('F6', 0.7)
+            ]
+        }
 
+        melody = theme_melodies.get(theme, theme_melodies['city'])
         sample_rate = 44100
         full_song = np.array([])
 
@@ -102,6 +193,11 @@ def create_flappy_bird_song():
         return None
     except:
         return None
+
+
+def create_flappy_bird_song():
+    """Create the default Flappy Adventure theme song"""
+    return create_theme_song('city')
 
 def create_sound_effect(frequency, duration=100):
     """Create a simple sound effect"""
@@ -141,25 +237,64 @@ except Exception as e:
     background_song = None
 
 class Particle:
-    def __init__(self, x, y, color):
+    def __init__(self, x, y, color, particle_type="trail"):
         self.x = x
         self.y = y
-        self.vx = random.uniform(-3, 3)
-        self.vy = random.uniform(-5, -1)
+        self.particle_type = particle_type
+
+        if particle_type == "trail":
+            # Trail particles move backward and fade
+            self.vx = random.uniform(-8, -2)
+            self.vy = random.uniform(-2, 2)
+            self.life = 45
+            self.max_life = 45
+            self.fade_rate = 0.95
+        else:
+            # Flap particles explode outward
+            self.vx = random.uniform(-3, 3)
+            self.vy = random.uniform(-5, -1)
+            self.life = 30
+            self.max_life = 30
+            self.fade_rate = 0.9
+
         self.color = color
-        self.life = 30
-        self.max_life = 30
+        self.alpha = 255
 
     def update(self):
         self.x += self.vx
         self.y += self.vy
-        self.vy += 0.2
+
+        if self.particle_type == "trail":
+            self.vy += 0.1  # Gentle gravity for trail
+        else:
+            self.vy += 0.2  # Normal gravity for flap particles
+
         self.life -= 1
+        self.alpha = int(255 * (self.life / self.max_life))
 
     def draw(self, screen):
-        size = int(3 * (self.life / self.max_life))
-        if size > 0:
-            pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), size)
+        if self.life > 0:
+            if self.particle_type == "trail":
+                # Trail particles are bigger and more visible
+                size = int(8 * (self.life / self.max_life))  # Increased from 4 to 8
+                if size > 0:
+                    # Create a trail effect with multiple larger circles
+                    for i in range(3):
+                        offset = i * 4  # Increased offset for bigger particles
+                        alpha = max(0, self.alpha - (i * 40))
+                        if alpha > 0:
+                            trail_surface = pygame.Surface((size * 2, size * 2), pygame.SRCALPHA)
+                            trail_surface.set_alpha(alpha)
+                            pygame.draw.circle(trail_surface, self.color, (size, size), size)
+                            screen.blit(trail_surface, (int(self.x - size + offset), int(self.y - size)))
+            else:
+                # Regular flap particles - made bigger
+                size = int(6 * (self.life / self.max_life))  # Increased from 3 to 6
+                if size > 0:
+                    particle_surface = pygame.Surface((size * 2, size * 2), pygame.SRCALPHA)
+                    particle_surface.set_alpha(self.alpha)
+                    pygame.draw.circle(particle_surface, self.color, (size, size), size)
+                    screen.blit(particle_surface, (int(self.x - size), int(self.y - size)))
 
 class Bird:
     def __init__(self, x, y):
@@ -177,7 +312,7 @@ class Bird:
         self.rotation = -30
         self.wing_angle = -20
         for _ in range(8):
-            self.particles.append(Particle(self.x, self.y + BIRD_SIZE//2, (139, 69, 19)))
+            self.particles.append(Particle(self.x, self.y + BIRD_SIZE//2, (139, 69, 19), "flap"))
 
         if flap_sound:
             flap_sound.play()
@@ -199,6 +334,11 @@ class Bird:
         self.wing_angle += 5 * self.wing_direction
         if self.wing_angle > 15 or self.wing_angle < -20:
             self.wing_direction *= -1
+
+        # Add trail particles continuously
+        if random.random() < 0.3:  # 30% chance per frame
+            trail_color = (139, 69, 19) if not speed_boost else (255, 215, 0)  # Gold trail during speed boost
+            self.particles.append(Particle(self.x, self.y + BIRD_SIZE//2, trail_color, "trail"))
 
         self.particles = [p for p in self.particles if p.life > 0]
         for particle in self.particles:
@@ -272,7 +412,7 @@ class Bird:
 class Background:
     def __init__(self):
         self.current_theme = "city"
-        self.themes = ["city", "forest", "mountains", "desert", "space", "ocean", "sunset", "winter", "volcano", "neon_city", "candy_land"]
+        self.themes = ["city", "forest", "mountains", "desert", "space", "ocean", "sunset", "winter", "volcano", "neon_city", "candy_land", "underwater", "cyberpunk", "fantasy", "steampunk", "apocalypse"]
         self.theme_index = 0
         self.clouds = []
         self.buildings = []
@@ -284,6 +424,11 @@ class Background:
         self.lava_particles = []
         self.neon_lights = []
         self.candy_elements = []
+        self.seaweed = []
+        self.cyber_effects = []
+        self.magical_particles = []
+        self.steam_clouds = []
+        self.dust_particles = []
         self.score_threshold = 8  # Reduced to cycle through themes faster
 
         # Initialize clouds
@@ -320,6 +465,21 @@ class Background:
 
         # Initialize candy elements for candy land
         self.generate_candy_elements()
+
+        # Initialize seaweed for underwater
+        self.generate_seaweed()
+
+        # Initialize cyber effects for cyberpunk
+        self.generate_cyber_effects()
+
+        # Initialize magical particles for fantasy
+        self.generate_magical_particles()
+
+        # Initialize steam clouds for steampunk
+        self.generate_steam_clouds()
+
+        # Initialize dust particles for apocalypse
+        self.generate_dust_particles()
 
     def generate_buildings(self):
         self.buildings = []
@@ -414,6 +574,61 @@ class Background:
                 'size': random.randint(10, 20)
             })
 
+    def generate_seaweed(self):
+        self.seaweed = []
+        for _ in range(15):
+            self.seaweed.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'height': random.randint(50, 150),
+                'color': (0, 150, 0),
+                'sway': random.uniform(0, 6.28)
+            })
+
+    def generate_cyber_effects(self):
+        self.cyber_effects = []
+        for _ in range(20):
+            self.cyber_effects.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, SCREEN_HEIGHT - 100),
+                'type': random.choice(['glitch', 'data_stream', 'hologram']),
+                'color': (0, 255, 255),
+                'size': random.randint(5, 15),
+                'speed': random.uniform(1, 3)
+            })
+
+    def generate_magical_particles(self):
+        self.magical_particles = []
+        for _ in range(25):
+            self.magical_particles.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, SCREEN_HEIGHT - 100),
+                'color': random.choice([(255, 0, 255), (0, 255, 255), (255, 255, 0), (255, 0, 128)]),
+                'size': random.randint(3, 8),
+                'sparkle': random.randint(0, 100)
+            })
+
+    def generate_steam_clouds(self):
+        self.steam_clouds = []
+        for _ in range(12):
+            self.steam_clouds.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(SCREEN_HEIGHT - 200, SCREEN_HEIGHT - 50),
+                'size': random.randint(20, 40),
+                'opacity': random.randint(100, 200),
+                'rise_speed': random.uniform(0.5, 1.5)
+            })
+
+    def generate_dust_particles(self):
+        self.dust_particles = []
+        for _ in range(30):
+            self.dust_particles.append({
+                'x': random.randint(0, SCREEN_WIDTH),
+                'y': random.randint(0, SCREEN_HEIGHT - 100),
+                'size': random.randint(2, 6),
+                'drift_speed': random.uniform(0.2, 0.8),
+                'color': (139, 69, 19)
+            })
+
     def update_theme(self, score):
         new_theme_index = min(score // self.score_threshold, len(self.themes) - 1)
         if new_theme_index != self.theme_index:
@@ -490,6 +705,43 @@ class Background:
                 candy_element['y'] = SCREEN_HEIGHT + 20
                 candy_element['x'] = random.randint(0, SCREEN_WIDTH)
 
+        # Update seaweed swaying
+        for seaweed in self.seaweed:
+            seaweed['sway'] += 0.02
+            seaweed['x'] -= pipe_speed // 4
+            if seaweed['x'] < -50:
+                seaweed['x'] = SCREEN_WIDTH + 50
+                seaweed['height'] = random.randint(50, 150)
+
+        # Update cyber effects
+        for effect in self.cyber_effects:
+            effect['y'] -= effect['speed']
+            if effect['y'] < -effect['size']:
+                effect['y'] = SCREEN_HEIGHT + effect['size']
+                effect['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update magical particles
+        for particle in self.magical_particles:
+            particle['sparkle'] = (particle['sparkle'] + 1) % 200
+            particle['y'] -= 0.5
+            if particle['y'] < -particle['size']:
+                particle['y'] = SCREEN_HEIGHT + particle['size']
+                particle['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update steam clouds
+        for steam in self.steam_clouds:
+            steam['y'] -= steam['rise_speed']
+            if steam['y'] < -steam['size']:
+                steam['y'] = SCREEN_HEIGHT + steam['size']
+                steam['x'] = random.randint(0, SCREEN_WIDTH)
+
+        # Update dust particles
+        for dust in self.dust_particles:
+            dust['x'] -= dust['drift_speed']
+            if dust['x'] < -dust['size']:
+                dust['x'] = SCREEN_WIDTH + dust['size']
+                dust['y'] = random.randint(0, SCREEN_HEIGHT - 100)
+
     def draw(self, screen):
         if self.current_theme == "city":
             self.draw_city(screen)
@@ -513,6 +765,16 @@ class Background:
             self.draw_neon_city(screen)
         elif self.current_theme == "candy_land":
             self.draw_candy_land(screen)
+        elif self.current_theme == "underwater":
+            self.draw_underwater(screen)
+        elif self.current_theme == "cyberpunk":
+            self.draw_cyberpunk(screen)
+        elif self.current_theme == "fantasy":
+            self.draw_fantasy(screen)
+        elif self.current_theme == "steampunk":
+            self.draw_steampunk(screen)
+        elif self.current_theme == "apocalypse":
+            self.draw_apocalypse(screen)
 
     def draw_city(self, screen):
         # Sky gradient
@@ -768,6 +1030,135 @@ class Background:
         for cloud in self.clouds:
             pygame.draw.circle(screen, WHITE, (cloud['x'], cloud['y']), cloud['size'])
 
+    def draw_underwater(self, screen):
+        # Deep blue underwater background
+        for y in range(SCREEN_HEIGHT - 100):
+            color_ratio = y / (SCREEN_HEIGHT - 100)
+            r = int(0 + (0 - 0) * color_ratio)
+            g = int(50 + (100 - 50) * color_ratio)
+            b = int(150 + (255 - 150) * color_ratio)
+            pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+
+        # Draw seaweed
+        for seaweed in self.seaweed:
+            sway_offset = math.sin(seaweed['sway']) * 10
+            points = [
+                (seaweed['x'] + sway_offset, SCREEN_HEIGHT - 100),
+                (seaweed['x'] + sway_offset + 5, SCREEN_HEIGHT - 100 - seaweed['height']//2),
+                (seaweed['x'] + sway_offset, SCREEN_HEIGHT - 100 - seaweed['height'])
+            ]
+            pygame.draw.polygon(screen, seaweed['color'], points)
+            pygame.draw.polygon(screen, (0, 100, 0), points, 2)
+
+        # Draw bubbles
+        for bubble in self.bubbles:
+            pygame.draw.circle(screen, (255, 255, 255, 100), (bubble['x'], bubble['y']), bubble['size'])
+            pygame.draw.circle(screen, (200, 200, 255), (bubble['x'], bubble['y']), bubble['size'], 1)
+
+    def draw_cyberpunk(self, screen):
+        # Dark purple cyberpunk background
+        screen.fill((25, 0, 50))
+
+        # Draw cyber effects
+        for effect in self.cyber_effects:
+            if effect['type'] == 'glitch':
+                # Glitch effect - random lines
+                for _ in range(3):
+                    x1 = effect['x'] + random.randint(-effect['size'], effect['size'])
+                    y1 = effect['y'] + random.randint(-effect['size'], effect['size'])
+                    x2 = effect['x'] + random.randint(-effect['size'], effect['size'])
+                    y2 = effect['y'] + random.randint(-effect['size'], effect['size'])
+                    pygame.draw.line(screen, effect['color'], (x1, y1), (x2, y2), 2)
+            elif effect['type'] == 'data_stream':
+                # Data stream effect
+                for i in range(5):
+                    y_offset = i * 10
+                    pygame.draw.circle(screen, effect['color'], (effect['x'], effect['y'] + y_offset), 2)
+            elif effect['type'] == 'hologram':
+                # Hologram effect
+                pygame.draw.circle(screen, effect['color'], (effect['x'], effect['y']), effect['size'])
+                pygame.draw.circle(screen, (255, 255, 255), (effect['x'], effect['y']), effect['size'], 2)
+
+        # Draw neon buildings
+        for building in self.buildings:
+            neon_color = (random.randint(100, 255), 0, random.randint(100, 255))
+            pygame.draw.rect(screen, (20, 20, 20), (building['x'], SCREEN_HEIGHT - 100 - building['height'], 60, building['height']))
+            pygame.draw.rect(screen, neon_color, (building['x'], SCREEN_HEIGHT - 100 - building['height'], 60, building['height']), 3)
+
+    def draw_fantasy(self, screen):
+        # Magical gradient background
+        for y in range(SCREEN_HEIGHT - 100):
+            color_ratio = y / (SCREEN_HEIGHT - 100)
+            r = int(100 + (200 - 100) * color_ratio)
+            g = int(50 + (100 - 50) * color_ratio)
+            b = int(150 + (255 - 150) * color_ratio)
+            pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+
+        # Draw magical particles
+        for particle in self.magical_particles:
+            sparkle_alpha = int(128 + 127 * math.sin(particle['sparkle'] * 0.1))
+            particle_surface = pygame.Surface((particle['size'] * 2, particle['size'] * 2), pygame.SRCALPHA)
+            particle_surface.set_alpha(sparkle_alpha)
+            pygame.draw.circle(particle_surface, particle['color'], (particle['size'], particle['size']), particle['size'])
+            screen.blit(particle_surface, (particle['x'] - particle['size'], particle['y'] - particle['size']))
+
+        # Draw floating islands (mountains)
+        for mountain in self.mountains:
+            # Island base
+            points = [(mountain['x'], SCREEN_HEIGHT - 100),
+                     (mountain['x'] + 75, SCREEN_HEIGHT - 100 - mountain['height']),
+                     (mountain['x'] + 150, SCREEN_HEIGHT - 100)]
+            pygame.draw.polygon(screen, (139, 69, 19), points)  # Brown base
+            pygame.draw.polygon(screen, (34, 139, 34), points)  # Green top
+            pygame.draw.polygon(screen, BLACK, points, 2)
+
+    def draw_steampunk(self, screen):
+        # Brown steampunk background
+        screen.fill((139, 69, 19))
+
+        # Draw steam clouds
+        for steam in self.steam_clouds:
+            steam_surface = pygame.Surface((steam['size'] * 2, steam['size'] * 2), pygame.SRCALPHA)
+            steam_surface.set_alpha(steam['opacity'])
+            pygame.draw.circle(steam_surface, (200, 200, 200), (steam['size'], steam['size']), steam['size'])
+            screen.blit(steam_surface, (steam['x'] - steam['size'], steam['y'] - steam['size']))
+
+        # Draw mechanical buildings
+        for building in self.buildings:
+            # Metal building
+            pygame.draw.rect(screen, (100, 100, 100), (building['x'], SCREEN_HEIGHT - 100 - building['height'], 60, building['height']))
+            pygame.draw.rect(screen, (50, 50, 50), (building['x'], SCREEN_HEIGHT - 100 - building['height'], 60, building['height']), 3)
+
+            # Gears and pipes
+            for i in range(3):
+                gear_y = SCREEN_HEIGHT - 100 - building['height'] + 20 + i * 30
+                if gear_y < SCREEN_HEIGHT - 100:
+                    pygame.draw.circle(screen, (80, 80, 80), (building['x'] + 30, gear_y), 8)
+                    pygame.draw.circle(screen, (60, 60, 60), (building['x'] + 30, gear_y), 8, 2)
+
+    def draw_apocalypse(self, screen):
+        # Dark apocalyptic background
+        screen.fill((40, 40, 40))
+
+        # Draw dust particles
+        for dust in self.dust_particles:
+            pygame.draw.circle(screen, dust['color'], (dust['x'], dust['y']), dust['size'])
+
+        # Draw destroyed buildings
+        for building in self.buildings:
+            # Broken building
+            height = building['height'] - random.randint(0, 50)
+            pygame.draw.rect(screen, (60, 60, 60), (building['x'], SCREEN_HEIGHT - 100 - height, 60, height))
+            pygame.draw.rect(screen, (30, 30, 30), (building['x'], SCREEN_HEIGHT - 100 - height, 60, height), 2)
+
+            # Broken windows
+            for i in range(2):
+                window_x = building['x'] + 15 + i * 25
+                window_y = SCREEN_HEIGHT - 100 - height + 20
+                if window_y < SCREEN_HEIGHT - 100:
+                    pygame.draw.rect(screen, (20, 20, 20), (window_x, window_y, 15, 12))
+                    pygame.draw.rect(screen, (10, 10, 10), (window_x, window_y, 15, 12), 1)
+
 class Pipe:
     def __init__(self, x, theme="city"):
         self.x = x
@@ -803,6 +1194,16 @@ class Pipe:
             self.draw_neon_city_pipe(screen)
         elif theme == "candy_land":
             self.draw_candy_land_pipe(screen)
+        elif theme == "underwater":
+            self.draw_underwater_pipe(screen)
+        elif theme == "cyberpunk":
+            self.draw_cyberpunk_pipe(screen)
+        elif theme == "fantasy":
+            self.draw_fantasy_pipe(screen)
+        elif theme == "steampunk":
+            self.draw_steampunk_pipe(screen)
+        elif theme == "apocalypse":
+            self.draw_apocalypse_pipe(screen)
 
     def draw_city_pipe(self, screen):
         # Building-like pipes
@@ -997,6 +1398,117 @@ class Pipe:
         # Candy cane
         pygame.draw.line(screen, WHITE, (self.x + PIPE_WIDTH//2, self.top_height - 50), (self.x + PIPE_WIDTH//2 + 10, self.top_height - 50 + 10), 3)
 
+    def draw_underwater_pipe(self, screen):
+        # Coral-like pipes
+        color = (255, 182, 193)  # Light coral
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, BLACK, (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Coral details
+        for i in range(0, self.top_height - 20, 30):
+            pygame.draw.circle(screen, (255, 20, 147), (self.x + 20, i + 20), 8)
+            pygame.draw.circle(screen, (255, 105, 180), (self.x + 40, i + 30), 6)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, BLACK, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Coral details
+        for i in range(0, self.bottom_height - 20, 30):
+            pygame.draw.circle(screen, (255, 20, 147), (self.x + 20, bottom_y + i + 20), 8)
+            pygame.draw.circle(screen, (255, 105, 180), (self.x + 40, bottom_y + i + 30), 6)
+
+    def draw_cyberpunk_pipe(self, screen):
+        # Cyberpunk pipes with neon effects
+        color = (20, 20, 20)
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, (0, 255, 255), (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Circuit patterns
+        for i in range(0, self.top_height - 10, 20):
+            pygame.draw.line(screen, (0, 255, 255), (self.x + 10, i + 10), (self.x + PIPE_WIDTH - 10, i + 10), 2)
+            pygame.draw.circle(screen, (255, 0, 255), (self.x + 20, i + 10), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, (0, 255, 255), (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Circuit patterns
+        for i in range(0, self.bottom_height - 10, 20):
+            pygame.draw.line(screen, (0, 255, 255), (self.x + 10, bottom_y + i + 10), (self.x + PIPE_WIDTH - 10, bottom_y + i + 10), 2)
+            pygame.draw.circle(screen, (255, 0, 255), (self.x + 20, bottom_y + i + 10), 3)
+
+    def draw_fantasy_pipe(self, screen):
+        # Crystal-like pipes
+        color = (138, 43, 226)  # Blue violet
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, (255, 255, 255), (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Crystal facets
+        for i in range(0, self.top_height - 20, 25):
+            points = [(self.x + 10, i + 10), (self.x + 30, i + 5), (self.x + 50, i + 10), (self.x + 30, i + 20)]
+            pygame.draw.polygon(screen, (255, 255, 255), points)
+            pygame.draw.polygon(screen, (138, 43, 226), points, 2)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, (255, 255, 255), (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Crystal facets
+        for i in range(0, self.bottom_height - 20, 25):
+            points = [(self.x + 10, bottom_y + i + 10), (self.x + 30, bottom_y + i + 5), (self.x + 50, bottom_y + i + 10), (self.x + 30, bottom_y + i + 20)]
+            pygame.draw.polygon(screen, (255, 255, 255), points)
+            pygame.draw.polygon(screen, (138, 43, 226), points, 2)
+
+    def draw_steampunk_pipe(self, screen):
+        # Brass steampunk pipes
+        color = (205, 133, 63)  # Peru (brass-like)
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, (139, 69, 19), (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Rivets and bolts
+        for i in range(0, self.top_height - 10, 30):
+            pygame.draw.circle(screen, (139, 69, 19), (self.x + 10, i + 15), 4)
+            pygame.draw.circle(screen, (139, 69, 19), (self.x + PIPE_WIDTH - 10, i + 15), 4)
+            pygame.draw.circle(screen, (139, 69, 19), (self.x + PIPE_WIDTH//2, i + 15), 4)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, (139, 69, 19), (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Rivets and bolts
+        for i in range(0, self.bottom_height - 10, 30):
+            pygame.draw.circle(screen, (139, 69, 19), (self.x + 10, bottom_y + i + 15), 4)
+            pygame.draw.circle(screen, (139, 69, 19), (self.x + PIPE_WIDTH - 10, bottom_y + i + 15), 4)
+            pygame.draw.circle(screen, (139, 69, 19), (self.x + PIPE_WIDTH//2, bottom_y + i + 15), 4)
+
+    def draw_apocalypse_pipe(self, screen):
+        # Rusty apocalyptic pipes
+        color = (139, 69, 19)  # Saddle brown
+        pygame.draw.rect(screen, color, (self.x, 0, PIPE_WIDTH, self.top_height))
+        pygame.draw.rect(screen, (101, 67, 33), (self.x, 0, PIPE_WIDTH, self.top_height), 3)
+
+        # Rust spots
+        for i in range(0, self.top_height - 10, 20):
+            rust_x = self.x + random.randint(5, PIPE_WIDTH - 15)
+            rust_y = i + random.randint(5, 15)
+            pygame.draw.circle(screen, (139, 0, 0), (rust_x, rust_y), 3)
+
+        # Bottom pipe
+        bottom_y = self.gap_y + PIPE_GAP // 2
+        pygame.draw.rect(screen, color, (self.x, bottom_y, PIPE_WIDTH, self.bottom_height))
+        pygame.draw.rect(screen, (101, 67, 33), (self.x, bottom_y, PIPE_WIDTH, self.bottom_height), 3)
+
+        # Rust spots
+        for i in range(0, self.bottom_height - 10, 20):
+            rust_x = self.x + random.randint(5, PIPE_WIDTH - 15)
+            rust_y = bottom_y + i + random.randint(5, 15)
+            pygame.draw.circle(screen, (139, 0, 0), (rust_x, rust_y), 3)
+
     def get_rects(self):
         top_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.top_height)
         bottom_rect = pygame.Rect(self.x, self.gap_y + PIPE_GAP // 2, PIPE_WIDTH, self.bottom_height)
@@ -1078,15 +1590,30 @@ class Game:
         self.last_collision_time = 0  # Track last collision to prevent rapid consecutive collisions
         self.pipe_speed = PIPE_SPEED
 
-        # Start background song
-        if background_song:
-            background_song.play(-1)  # Loop indefinitely
+        # Music management
+        self.current_theme_song = None
+        self.change_theme_music('city')  # Start with city theme music
 
         for i in range(3):
             self.pipes.append(Pipe(SCREEN_WIDTH + i * 300, self.background.current_theme))
 
         # Add initial powerup
         self.spawn_powerup()
+
+    def change_theme_music(self, theme):
+        """Change the background music based on the current theme"""
+        try:
+            # Stop current music if playing
+            if self.current_theme_song:
+                self.current_theme_song.stop()
+
+            # Create and play new theme music
+            self.current_theme_song = create_theme_song(theme)
+            if self.current_theme_song:
+                self.current_theme_song.play(-1)  # Loop indefinitely
+                print(f"🎵 Now playing {theme} theme music!")
+        except Exception as e:
+            print(f"❌ Error changing theme music: {e}")
 
     def spawn_powerup(self):
         """Spawn a random powerup"""
@@ -1144,10 +1671,10 @@ class Game:
             if current_time > end_time:
                 if effect == 'speed':
                     self.speed_boost = False
-                    # Always add 2 seconds of invincibility after speed boost ends
+                    # Always add 4 seconds of invincibility after speed boost ends
                     self.invincible = True
-                    self.powerup_timers['invincible'] = current_time + 2000  # 2000ms = 2 seconds
-                    print("Speed boost ended! 2 seconds of invincibility granted!")
+                    self.powerup_timers['invincible'] = current_time + 4000  # 4000ms = 4 seconds
+                    print("Speed boost ended! 4 seconds of invincibility granted!")
                 elif effect == 'invincible':
                     self.invincible = False
                     print("Invincible effect ended!")
@@ -1202,7 +1729,12 @@ class Game:
             current_pipe_speed = self.get_pipe_speed()
             self.bird.update(speed_boost=self.speed_boost, pipe_speed=current_pipe_speed)
             self.background.update(current_pipe_speed)
+
+            # Check if theme changed and update music
+            old_theme = self.background.current_theme
             self.background.update_theme(self.score)
+            if self.background.current_theme != old_theme:
+                self.change_theme_music(self.background.current_theme)
 
             # Update pipes
             for pipe in self.pipes:
@@ -1439,13 +1971,13 @@ class Game:
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 50))
 
         # Draw lives with heart symbols
-        if self.lives <= 10:
+        if self.lives <= 6:
             heart_symbols = "♥" * self.lives
-            lives_text = self.small_font.render(f"Lives: {heart_symbols}", True, RED)
+            lives_text = self.small_font.render(f"Lives: {heart_symbols}", True, GOLD)
         else:
-            lives_text = self.small_font.render(f"Lives: {self.lives} ♥", True, RED)
+            lives_text = self.small_font.render(f"Lives: {self.lives} ♥", True, GOLD)
         lives_text.set_alpha(200)
-        screen.blit(lives_text, (SCREEN_WIDTH - 120, 10))
+        screen.blit(lives_text, (SCREEN_WIDTH - 200, 10))
 
         # Draw high score
         high_score_text = self.small_font.render(f"Best: {self.high_score}", True, WHITE)
