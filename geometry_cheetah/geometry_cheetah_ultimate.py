@@ -354,66 +354,244 @@ class AudioManager:
         if sound_name in self.sounds:
             self.sounds[sound_name].play()
     
-    def start_music(self):
-        """Start background music"""
+    def start_music(self, level_num=1):
+        """Start background music for specific level"""
         if not self.music_playing:
-            # Create a fun background music loop
-            self.create_background_music()
+            # Create level-specific background music
+            self.create_background_music(level_num)
             self.music_playing = True
+            self.current_level = level_num
+            # Set a timer to restart music when it ends
+            self.music_timer = pygame.time.get_ticks()
     
-    def create_background_music(self):
-        """Create a fun background music loop"""
+    def update_music(self, level_num=1):
+        """Update music - restart when it ends"""
+        if self.music_playing:
+            current_time = pygame.time.get_ticks()
+            # Check if 8 seconds have passed (music duration)
+            if current_time - self.music_timer > 8000:
+                self.create_background_music(level_num)
+                self.music_timer = current_time
+    
+    def create_background_music(self, level_num=1):
+        """Create level-specific background music"""
         sample_rate = 44100
-        duration = 2.0  # 2 second loop
+        duration = 8.0  # 8 second non-repeating track
         samples = int(sample_rate * duration)
         
-        # Create a fun upbeat melody
+        # Create level-specific melody array
         music_array = np.zeros((samples, 2), dtype=np.int16)
         
-        # Define a simple melody (C major scale)
-        melody_notes = [
-            (523, 0.2),   # C
-            (587, 0.2),   # D
-            (659, 0.2),   # E
-            (698, 0.2),   # F
-            (784, 0.2),   # G
-            (880, 0.2),   # A
-            (988, 0.2),   # B
-            (1047, 0.2),  # C (octave)
-            (988, 0.2),   # B
-            (880, 0.2),   # A
-            (784, 0.2),   # G
-            (698, 0.2),   # F
-            (659, 0.2),   # E
-            (587, 0.2),   # D
-            (523, 0.2),   # C
-        ]
+        # Define different melodies for each level
+        if level_num == 1:  # Tutorial - Calm and gentle
+            melody_sequence = [
+                # Gentle intro
+                (523, 0.4, 0.15),   # C - soft
+                (659, 0.4, 0.15),   # E - soft
+                (784, 0.4, 0.15),   # G - soft
+                (1047, 0.8, 0.18),  # High C - longer, gentle
+                
+                # Peaceful bridge
+                (587, 0.3, 0.12),   # D
+                (698, 0.3, 0.12),   # F
+                (880, 0.3, 0.12),   # A
+                (988, 0.6, 0.15),   # B - medium length
+                
+                # Gentle chorus
+                (784, 0.25, 0.18),  # G - medium, soft
+                (880, 0.25, 0.18),  # A - medium, soft
+                (988, 0.25, 0.18),  # B - medium, soft
+                (1047, 0.5, 0.2),   # High C - soft
+                (988, 0.25, 0.18),  # B
+                (880, 0.25, 0.18),  # A
+                (784, 0.5, 0.18),   # G - ending
+                
+                # Calm outro
+                (659, 0.4, 0.15),   # E
+                (587, 0.4, 0.12),   # D
+                (523, 0.8, 0.1),    # C - fade out
+            ]
+        elif level_num == 2:  # Nature Walk - Upbeat nature theme
+            melody_sequence = [
+                # Nature-inspired intro
+                (523, 0.3, 0.18),   # C - nature-like
+                (659, 0.3, 0.18),   # E
+                (784, 0.3, 0.18),   # G
+                (1047, 0.6, 0.22),  # High C
+                
+                # Flowing bridge
+                (587, 0.25, 0.15),  # D
+                (698, 0.25, 0.15),  # F
+                (880, 0.25, 0.15),  # A
+                (988, 0.5, 0.18),   # B
+                
+                # Energetic chorus
+                (784, 0.2, 0.22),   # G - more energy
+                (880, 0.2, 0.22),   # A
+                (988, 0.2, 0.22),   # B
+                (1047, 0.4, 0.25),  # High C
+                (988, 0.2, 0.22),   # B
+                (880, 0.2, 0.22),   # A
+                (784, 0.4, 0.22),   # G
+                
+                # Nature outro
+                (659, 0.35, 0.18),  # E
+                (587, 0.35, 0.15),  # D
+                (523, 0.7, 0.12),   # C
+            ]
+        elif level_num == 3:  # Cloud Hopping - Floating, dreamy
+            melody_sequence = [
+                # Dreamy intro
+                (523, 0.35, 0.16),  # C - dreamy
+                (659, 0.35, 0.16),  # E
+                (784, 0.35, 0.16),  # G
+                (1047, 0.7, 0.2),   # High C - longer
+                
+                # Floating bridge
+                (587, 0.3, 0.14),   # D
+                (698, 0.3, 0.14),   # F
+                (880, 0.3, 0.14),   # A
+                (988, 0.6, 0.18),   # B
+                
+                # Floating chorus
+                (784, 0.18, 0.2),   # G - floating rhythm
+                (880, 0.18, 0.2),   # A
+                (988, 0.18, 0.2),   # B
+                (1047, 0.35, 0.24), # High C
+                (988, 0.18, 0.2),   # B
+                (880, 0.18, 0.2),   # A
+                (784, 0.35, 0.2),   # G
+                
+                # Dreamy outro
+                (659, 0.4, 0.16),   # E
+                (587, 0.4, 0.14),   # D
+                (523, 0.8, 0.12),   # C
+            ]
+        elif level_num == 4:  # Storm Challenge - Intense, dramatic
+            melody_sequence = [
+                # Stormy intro
+                (523, 0.25, 0.25),  # C - intense
+                (659, 0.25, 0.25),  # E
+                (784, 0.25, 0.25),  # G
+                (1047, 0.5, 0.3),   # High C - loud
+                
+                # Dramatic bridge
+                (587, 0.2, 0.2),    # D
+                (698, 0.2, 0.2),    # F
+                (880, 0.2, 0.2),    # A
+                (988, 0.4, 0.25),   # B
+                
+                # Intense chorus
+                (784, 0.15, 0.3),   # G - very quick, loud
+                (880, 0.15, 0.3),   # A
+                (988, 0.15, 0.3),   # B
+                (1047, 0.3, 0.35),  # High C - very loud
+                (988, 0.15, 0.3),   # B
+                (880, 0.15, 0.3),   # A
+                (784, 0.3, 0.3),    # G
+                
+                # Stormy outro
+                (659, 0.3, 0.25),   # E
+                (587, 0.3, 0.2),    # D
+                (523, 0.6, 0.15),   # C
+            ]
+        elif level_num == 5:  # Ultimate Test - Epic, heroic
+            melody_sequence = [
+                # Epic intro
+                (523, 0.3, 0.28),   # C - heroic
+                (659, 0.3, 0.28),   # E
+                (784, 0.3, 0.28),   # G
+                (1047, 0.6, 0.32),  # High C - epic
+                
+                # Heroic bridge
+                (587, 0.25, 0.22),  # D
+                (698, 0.25, 0.22),  # F
+                (880, 0.25, 0.22),  # A
+                (988, 0.5, 0.28),   # B
+                
+                # Epic chorus
+                (784, 0.12, 0.32),  # G - very quick, epic
+                (880, 0.12, 0.32),  # A
+                (988, 0.12, 0.32),  # B
+                (1047, 0.25, 0.35), # High C - epic
+                (988, 0.12, 0.32),  # B
+                (880, 0.12, 0.32),  # A
+                (784, 0.25, 0.32),  # G
+                
+                # Epic outro
+                (659, 0.35, 0.28),  # E
+                (587, 0.35, 0.25),  # D
+                (523, 0.7, 0.2),    # C
+            ]
+        else:  # Level 6 - Impossible - Chaotic, intense
+            melody_sequence = [
+                # Chaotic intro
+                (523, 0.2, 0.3),    # C - very quick, loud
+                (659, 0.2, 0.3),    # E
+                (784, 0.2, 0.3),    # G
+                (1047, 0.4, 0.35),  # High C - very loud
+                
+                # Intense bridge
+                (587, 0.15, 0.25),  # D - very quick
+                (698, 0.15, 0.25),  # F
+                (880, 0.15, 0.25),  # A
+                (988, 0.3, 0.3),    # B
+                
+                # Chaotic chorus
+                (784, 0.1, 0.35),   # G - extremely quick
+                (880, 0.1, 0.35),   # A
+                (988, 0.1, 0.35),   # B
+                (1047, 0.2, 0.4),   # High C - extremely loud
+                (988, 0.1, 0.35),   # B
+                (880, 0.1, 0.35),   # A
+                (784, 0.2, 0.35),   # G
+                
+                # Intense outro
+                (659, 0.25, 0.3),   # E
+                (587, 0.25, 0.25),  # D
+                (523, 0.5, 0.2),    # C
+            ]
         
         sample_index = 0
-        for note_freq, note_duration in melody_notes:
+        for note_freq, note_duration, volume in melody_sequence:
             note_samples = int(sample_rate * note_duration)
             for i in range(note_samples):
                 if sample_index < samples:
-                    # Create a pleasant sine wave with some harmonics
+                    # Create an upbeat sound with more harmonics and rhythm
                     t = i / sample_rate
-                    sample = int(32767 * 0.15 * (
+                    
+                    # Add some rhythm variation
+                    rhythm_factor = 1.0
+                    if i < note_samples * 0.1:  # Attack
+                        rhythm_factor = i / (note_samples * 0.1)
+                    elif i > note_samples * 0.8:  # Release
+                        rhythm_factor = (note_samples - i) / (note_samples * 0.2)
+                    
+                    # Create a more complex, upbeat sound
+                    sample = int(32767 * volume * rhythm_factor * (
                         math.sin(2 * math.pi * note_freq * t) +
-                        0.3 * math.sin(2 * math.pi * note_freq * 2 * t) +  # Second harmonic
-                        0.1 * math.sin(2 * math.pi * note_freq * 3 * t)    # Third harmonic
+                        0.4 * math.sin(2 * math.pi * note_freq * 2 * t) +  # Second harmonic
+                        0.2 * math.sin(2 * math.pi * note_freq * 3 * t) +  # Third harmonic
+                        0.1 * math.sin(2 * math.pi * note_freq * 4 * t)    # Fourth harmonic
                     ))
+                    
+                    # Add some subtle percussion-like elements
+                    if i % 100 < 10:  # Occasional percussive hits
+                        sample += int(32767 * 0.05 * math.sin(2 * math.pi * 200 * t))
+                    
                     music_array[sample_index, 0] = sample
                     music_array[sample_index, 1] = sample
                     sample_index += 1
         
-        # Fill remaining samples with silence or repeat
+        # Fill remaining samples with silence
         while sample_index < samples:
             music_array[sample_index, 0] = 0
             music_array[sample_index, 1] = 0
             sample_index += 1
         
-        # Create the music sound and play it in a loop
+        # Create the music sound and play it once (no loop)
         self.background_music = pygame.sndarray.make_sound(music_array)
-        self.background_music.play(-1)  # -1 means loop indefinitely
+        self.background_music.play(0)  # 0 means play once, no loop
     
     def stop_music(self):
         """Stop background music"""
@@ -1443,6 +1621,9 @@ class Game:
                 self.audio_manager.play_sound('score')
                 self.last_score = self.score
             
+            # Update background music
+            self.audio_manager.update_music(self.current_level)
+            
             # Check collision
             if self.check_collision():
                 if self.cheetah.lives > 1:
@@ -1481,7 +1662,7 @@ class Game:
                         self.reset_game()
                         self.game_state = GameState.PLAYING
                         self.game_start_time = pygame.time.get_ticks()
-                        self.audio_manager.start_music()
+                        self.audio_manager.start_music(self.current_level)
                     elif self.game_state == GameState.PLAYING:
                         self.cheetah.jump()
                     elif self.game_state == GameState.GAME_OVER:
@@ -1489,7 +1670,7 @@ class Game:
                         self.reset_game()
                         self.game_state = GameState.PLAYING
                         self.game_start_time = pygame.time.get_ticks()
-                        self.audio_manager.start_music()
+                        self.audio_manager.start_music(self.current_level)
                     elif self.game_state == GameState.LEVEL_COMPLETE:
                         if self.current_level < len(self.levels):
                             self.audio_manager.play_sound('menu_select')
@@ -1497,7 +1678,7 @@ class Game:
                             self.reset_game()
                             self.game_state = GameState.PLAYING
                             self.game_start_time = pygame.time.get_ticks()
-                            self.audio_manager.start_music()
+                            self.audio_manager.start_music(self.current_level)
                         else:
                             self.game_state = GameState.LEVEL_SELECT
                 
